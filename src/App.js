@@ -8,8 +8,8 @@ function App() {
   let open = 1.98;
   let sign = "add";
   let end_text = "GAME OVER";
-  let pacman = { x: 20, y: 20, mouth: 0 }
-  let standardSize = 40;
+  let pacman;
+  let standardSize;
   let Blocks = [];
   let Foods = [];
   let Powers = [];
@@ -19,23 +19,27 @@ function App() {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
   };
   const setup = (p5, canvasParentRef) => {
-    var vw = 882;
-    var vh = 562;
-    if (vw > p5.windowWidth || vh > p5.windowHeight) {
-      vw = p5.windowWidth; vh = p5.windowHeight;
-      gameState = "Size"
+    var vw, vh;
+    if(p5.windowHeight < p5.windowWidth){
+      standardSize = p5.windowHeight/14;
+      vw = standardSize*22;
+      vh = standardSize*14;
+    } else {
+      vw = p5.windowWidth;
+      vh = p5.windowHeight;
+      gameState = "Portrait";
     }
     p5.createCanvas(vw, vh, p5.WEBGL).parent(canvasParentRef);
     p5.textFont(font);
     p5.textAlign(p5.CENTER);
-    p5.textSize(30);
+    p5.textSize(standardSize*0.5);
     p5.fill(252);
     maze();
   };
   const draw = p5 => {
     p5.background(0)
-    if (gameState === "Size") {
-      p5.text("The game doesn't work on small screens", 0, 0)
+    if (gameState === "Portrait") {
+      Rotate(p5);
     } else if (gameState === "SS") {
       StartScreen(p5);
     } else if (gameState === "game") {
@@ -45,13 +49,18 @@ function App() {
     }
   };
 
+  const Rotate = (p5) => {
+    console.log(p5.windowWidth, p5.windowHeight);
+    p5.text("Try rotating the screen..", 0, 0);
+  };
+
   const StartScreen = (p5) => {
     p5.text("PRESS ENTER TO START", 0, 0)
   };
 
   const GameScreen = (p5) => {
     p5.fill(255, 255, 255)
-    p5.text('Score: ' + score, 0, -260);
+    p5.text('Score: ' + score, 0, -13*standardSize/2);
     if (sign === "add") {
       open += 0.01;
       if (open >= 1.95) sign = "sub";
@@ -68,22 +77,25 @@ function App() {
 
   const GameOver = (p5) => {
     p5.fill(255);
-    p5.text(end_text, 0, -20);
-    p5.text("Score: " + score, 0, 20);
-    p5.text("Press Enter To restart", 0, 240);
+    p5.text(end_text, 0, -standardSize/2);
+    p5.text("Score: " + score, 0, standardSize/2);
+    p5.text("Press Enter To restart", 0, 6*standardSize);
   }
 
   const windowResized = p5 => {
-    var vw = 882;
-    var vh = 562;
-    if (vw > p5.windowWidth || vh > p5.windowHeight) {
-      vw = p5.windowWidth; vh = p5.windowHeight;
-      gameState = "Size"
+    var vw, vh;
+    if(p5.windowHeight < p5.windowWidth){
+      standardSize = p5.windowHeight/14;
+      vw = standardSize*22;
+      vh = standardSize*14;
+      p5.textSize(standardSize*0.5);
+      gameState = "SS";
     } else {
-      gameState = "SS"
-      score = 0
+      vw = p5.windowWidth;
+      vh = p5.windowHeight;
+      gameState = "Portrait";
     }
-    p5.resizeCanvas(vw, vh);
+    p5.resizeCanvas(vw,vh);
   };
 
   const keyPressed = p5 => {
@@ -95,21 +107,21 @@ function App() {
       var newy = pacman.y;
       if (p5.keyCode === p5.LEFT_ARROW) {
         pacman.mouth = p5.PI;
-        if (pacman.x > -420) newx -= standardSize;
+        if (pacman.x > -21/2) newx -= 1;
       } else if (p5.keyCode === p5.RIGHT_ARROW) {
         pacman.mouth = 0;
-        if (pacman.x < 420) newx += standardSize;
+        if (pacman.x < 21/2) newx += 1;
       } else if (p5.keyCode === p5.UP_ARROW) {
         pacman.mouth = 3 * p5.HALF_PI;
-        if (pacman.y > -220) newy -= standardSize;
+        if (pacman.y > -11/2) newy -= 1;
       } else if (p5.keyCode === p5.DOWN_ARROW) {
         pacman.mouth = p5.HALF_PI;
-        if (pacman.y < 260) newy += standardSize;
+        if (pacman.y < 6) newy += 1;
       }
       var flag = true;
       for (var i = 0; i < Blocks.length; i++) {
-        var dis = p5.dist(newx, newy, Blocks[i].x, Blocks[i].y);
-        if (dis === 0) {
+        var dis = p5.dist(newx*standardSize, newy*standardSize, Blocks[i].x*standardSize, Blocks[i].y*standardSize);
+        if (dis < 1) {
           flag = false;
         }
       }
@@ -118,16 +130,16 @@ function App() {
         pacman.y = newy;
       }
       for (i = 0; i < Foods.length; i++) {
-        dis = p5.dist(newx, newy, Foods[i].x, Foods[i].y);
-        if (dis === 0) {
+        dis = p5.dist(newx*standardSize, newy*standardSize, Foods[i].x*standardSize, Foods[i].y*standardSize);
+        if (dis < 1) {
           score += 1;
           Foods.splice(i, 1);
           i--;
         }
       }
       for (i = 0; i < Powers.length; i++) {
-        dis = p5.dist(newx, newy, Powers[i].x, Powers[i].y);
-        if (dis === 0) {
+        dis = p5.dist(newx*standardSize, newy*standardSize, Powers[i].x*standardSize, Powers[i].y*standardSize);
+        if (dis < 1) {
           score += 5;
           Powers.splice(i, 1);
           i--;
@@ -155,19 +167,19 @@ function App() {
     for (var i = 0; i < 13; i++) {
       for (var j = 0; j < 22; j++) {
         if (level[i][j] === '*') {
-          Blocks.push({ x: (j - 11 + 1 / 2) * standardSize, y: (i - 6 + 1 / 2) * standardSize });
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
         else if (level[i][j] === '-') {
-          Foods.push({ x: (j - 11 + 1 / 2) * standardSize, y: (i - 6 + 1 / 2) * standardSize });
+          Foods.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
-        else if(level[i][j] === 'x') {
-          Powers.push({ x: (j - 11 + 1 / 2) * standardSize, y: (i - 6 + 1 / 2) * standardSize });
+        else if (level[i][j] === 'x') {
+          Powers.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
         else if (level[i][j] === 'p') {
-          pacman = { x: (j - 11 + 1 / 2) * standardSize, y: (i - 6 + 1 / 2) * standardSize, mouth: 0 }
-        } 
+          pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0 }
+        }
         else if (level[i][j] === 'e') {
-          Enemies.push({ x: (j - 11 + 1 / 2) * standardSize, y: (i - 6 + 1 / 2) * standardSize});
+          Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
       }
     }
@@ -175,20 +187,22 @@ function App() {
 
   const createMaze = p5 => {
     p5.fill(255, 255, 0)
-    p5.arc(pacman.x, pacman.y, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
+    p5.arc(pacman.x*standardSize, pacman.y*standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
     p5.fill(30, 20, 80)
-    for (var i = 0; i < Blocks.length; i++) p5.square(Blocks[i].x - standardSize / 2, Blocks[i].y - standardSize / 2, 40);
+    for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2)*standardSize, (Blocks[i].y - 1 / 2)*standardSize, standardSize);
     p5.fill(180, 180, 200)
-    for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x, Foods[i].y, 10);
+    for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x *standardSize, Foods[i].y*standardSize, standardSize/4);
     p5.fill(0, 127, 255)
-    for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x, Powers[i].y, 15);
+    for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x*standardSize, Powers[i].y*standardSize, 3*standardSize/4);
     p5.fill(240, 20, 20)
-    for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x, Enemies[i].y, 35);
+    for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x*standardSize, Enemies[i].y*standardSize, 7*standardSize/8);
   }
 
   return (
-    <Sketch preload={preload} setup={setup} draw={draw}
-      windowResized={windowResized} keyPressed={keyPressed} />
+    <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
+      <Sketch preload={preload} setup={setup} draw={draw}
+        windowResized={windowResized} keyPressed={keyPressed} />
+    </div>
   );
 }
 
