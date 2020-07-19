@@ -3,7 +3,7 @@ import Sketch from 'react-p5';
 
 function App() {
   let font;
-  let gameState = "game";
+  let gameState = "SS";
   let score = 0;
   let open = 1.98;
   let sign = "add";
@@ -101,27 +101,43 @@ function App() {
   };
 
   const touchStarted = p5 => {
-    if (gameState === "SS") { 
-      gameState = "game"; 
-    } else if (gameState === "go") { 
-      gameState = "SS"; 
-      score = 0; 
-      maze(); 
+    if (gameState === "SS") {
+      gameState = "game";
+    } else if (gameState === "go") {
+      gameState = "SS";
+      score = 0;
+      maze();
     } else if (gameState === "game") {
       var newx = pacman.x;
       var newy = pacman.y;
-      if (p5.mouseX < p5.width / 4) {
-        pacman.mouth = p5.PI;
-        if (pacman.x > -21 / 2) newx -= 1;
-      } else if (p5.mouseX > 3 * p5.width / 4) {
-        pacman.mouth = 0;
-        if (pacman.x < 21 / 2) newx += 1;
-      } else if (p5.mouseY < p5.height / 2) {
-        pacman.mouth = 3 * p5.HALF_PI;
-        if (pacman.y > -11 / 2) newy -= 1;
+      if (p5.windowWidth > p5.windowHeight) {
+        if (p5.mouseX < p5.width / 6) {
+          pacman.mouth = p5.PI;
+          if (pacman.x > -21 / 2) newx -= 1;
+        } else if (p5.mouseX > 5 * p5.width / 6) {
+          pacman.mouth = 0;
+          if (pacman.x < 21 / 2) newx += 1;
+        } else if (p5.mouseY < p5.height / 2) {
+          pacman.mouth = 3 * p5.HALF_PI;
+          if (pacman.y > -11 / 2) newy -= 1;
+        } else {
+          pacman.mouth = p5.HALF_PI;
+          if (pacman.y < 6) newy += 1;
+        }
       } else {
-        pacman.mouth = p5.HALF_PI;
-        if (pacman.y < 6) newy += 1;
+        if (p5.mouseX < p5.width / 4) {
+          pacman.mouth = p5.PI;
+          if (pacman.x > -21 / 2) newx -= 1;
+        } else if (p5.mouseX > 3 * p5.width / 4) {
+          pacman.mouth = 0;
+          if (pacman.x < 21 / 2) newx += 1;
+        } else if (p5.mouseY < p5.height) {
+          pacman.mouth = 3 * p5.HALF_PI;
+          if (pacman.y > -11 / 2) newy -= 1;
+        } else {
+          pacman.mouth = p5.HALF_PI;
+          if (pacman.y < 6) newy += 1;
+        }
       }
       movePac(p5, newx, newy);
     }
