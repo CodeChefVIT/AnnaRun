@@ -3,7 +3,7 @@ import Sketch from 'react-p5';
 
 function App() {
   let font;
-  let gameState = "SS";
+  let gameState = "game";
   let score = 0;
   let open = 1.98;
   let sign = "add";
@@ -20,19 +20,19 @@ function App() {
   };
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
-    if(p5.windowHeight < p5.windowWidth){
-      standardSize = p5.windowHeight/14;
-      vw = standardSize*22;
-      vh = standardSize*14;
+    if (11 * p5.windowHeight / 7 < p5.windowWidth) {
+      standardSize = p5.windowHeight / 14;
+      vw = standardSize * 22;
+      vh = standardSize * 14;
     } else {
-      vw = p5.windowWidth;
-      vh = p5.windowHeight;
-      gameState = "Portrait";
+      standardSize = p5.windowWidth / 22;
+      vw = standardSize * 22;
+      vh = standardSize * 14;
     }
     p5.createCanvas(vw, vh, p5.WEBGL).parent(canvasParentRef);
     p5.textFont(font);
     p5.textAlign(p5.CENTER);
-    p5.textSize(standardSize*0.5);
+    p5.textSize(standardSize * 0.5);
     p5.fill(252);
     maze();
   };
@@ -60,7 +60,7 @@ function App() {
 
   const GameScreen = (p5) => {
     p5.fill(255, 255, 255)
-    p5.text('Score: ' + score, 0, -13*standardSize/2);
+    p5.text('Score: ' + score, 0, -25 * standardSize / 4);
     if (sign === "add") {
       open += 0.01;
       if (open >= 1.95) sign = "sub";
@@ -77,26 +77,55 @@ function App() {
 
   const GameOver = (p5) => {
     p5.fill(255);
-    p5.text(end_text, 0, -standardSize/2);
-    p5.text("Score: " + score, 0, standardSize/2);
-    p5.text("Press Enter To restart", 0, 6*standardSize);
+    p5.text(end_text, 0, -standardSize / 2);
+    p5.text("Score: " + score, 0, standardSize / 2);
+    p5.text("Press Enter To restart", 0, 6 * standardSize);
   }
 
   const windowResized = p5 => {
     var vw, vh;
-    if(p5.windowHeight < p5.windowWidth){
-      standardSize = p5.windowHeight/14;
-      vw = standardSize*22;
-      vh = standardSize*14;
-      p5.textSize(standardSize*0.5);
+    if (11 * p5.windowHeight / 7 < p5.windowWidth) {
+      standardSize = p5.windowHeight / 14;
+      vw = standardSize * 22;
+      vh = standardSize * 14;
       gameState = "SS";
+      p5.textSize(standardSize * 0.5);
     } else {
-      vw = p5.windowWidth;
-      vh = p5.windowHeight;
-      gameState = "Portrait";
+      standardSize = p5.windowWidth / 22;
+      vw = standardSize * 22;
+      vh = standardSize * 14;
+      gameState = "SS";
+      p5.textSize(standardSize * 0.5);
     }
-    p5.resizeCanvas(vw,vh);
+    p5.resizeCanvas(vw, vh);
   };
+
+  const touchStarted = p5 => {
+    if (gameState === "SS") { 
+      gameState = "game"; 
+    } else if (gameState === "go") { 
+      gameState = "SS"; 
+      score = 0; 
+      maze(); 
+    } else if (gameState === "game") {
+      var newx = pacman.x;
+      var newy = pacman.y;
+      if (p5.mouseX < p5.width / 4) {
+        pacman.mouth = p5.PI;
+        if (pacman.x > -21 / 2) newx -= 1;
+      } else if (p5.mouseX > 3 * p5.width / 4) {
+        pacman.mouth = 0;
+        if (pacman.x < 21 / 2) newx += 1;
+      } else if (p5.mouseY < p5.height / 2) {
+        pacman.mouth = 3 * p5.HALF_PI;
+        if (pacman.y > -11 / 2) newy -= 1;
+      } else {
+        pacman.mouth = p5.HALF_PI;
+        if (pacman.y < 6) newy += 1;
+      }
+      movePac(p5, newx, newy);
+    }
+  }
 
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
@@ -107,62 +136,67 @@ function App() {
       var newy = pacman.y;
       if (p5.keyCode === p5.LEFT_ARROW) {
         pacman.mouth = p5.PI;
-        if (pacman.x > -21/2) newx -= 1;
+        if (pacman.x > -21 / 2) newx -= 1;
       } else if (p5.keyCode === p5.RIGHT_ARROW) {
         pacman.mouth = 0;
-        if (pacman.x < 21/2) newx += 1;
+        if (pacman.x < 21 / 2) newx += 1;
       } else if (p5.keyCode === p5.UP_ARROW) {
         pacman.mouth = 3 * p5.HALF_PI;
-        if (pacman.y > -11/2) newy -= 1;
+        if (pacman.y > -11 / 2) newy -= 1;
       } else if (p5.keyCode === p5.DOWN_ARROW) {
         pacman.mouth = p5.HALF_PI;
         if (pacman.y < 6) newy += 1;
       }
-      var flag = true;
-      for (var i = 0; i < Blocks.length; i++) {
-        var dis = p5.dist(newx*standardSize, newy*standardSize, Blocks[i].x*standardSize, Blocks[i].y*standardSize);
-        if (dis < 1) {
-          flag = false;
-        }
-      }
-      if (flag === true) {
-        pacman.x = newx;
-        pacman.y = newy;
-      }
-      for (i = 0; i < Foods.length; i++) {
-        dis = p5.dist(newx*standardSize, newy*standardSize, Foods[i].x*standardSize, Foods[i].y*standardSize);
-        if (dis < 1) {
-          score += 1;
-          Foods.splice(i, 1);
-          i--;
-        }
-      }
-      for (i = 0; i < Powers.length; i++) {
-        dis = p5.dist(newx*standardSize, newy*standardSize, Powers[i].x*standardSize, Powers[i].y*standardSize);
-        if (dis < 1) {
-          score += 5;
-          Powers.splice(i, 1);
-          i--;
-        }
+      movePac(p5, newx, newy);
+    }
+  }
+
+  const movePac = (p5, newx, newy) => {
+    var flag = true;
+    for (var i = 0; i < Blocks.length; i++) {
+      var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[i].x * standardSize, Blocks[i].y * standardSize);
+      if (dis < 1) {
+        flag = false;
       }
     }
+    if (flag === true) {
+      pacman.x = newx;
+      pacman.y = newy;
+    }
+    for (i = 0; i < Foods.length; i++) {
+      dis = p5.dist(newx * standardSize, newy * standardSize, Foods[i].x * standardSize, Foods[i].y * standardSize);
+      if (dis < 1) {
+        score += 1;
+        Foods.splice(i, 1);
+        i--;
+      }
+    }
+    for (i = 0; i < Powers.length; i++) {
+      dis = p5.dist(newx * standardSize, newy * standardSize, Powers[i].x * standardSize, Powers[i].y * standardSize);
+      if (dis < 1) {
+        score += 5;
+        Powers.splice(i, 1);
+        i--;
+      }
+    }
+
   };
 
   const maze = () => {
     const level = [
-      ['*', '*', '*', '*', '-', '-', '-', '-', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '-', '-', '*'],
-      ['*', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '*', '*', 'x', '-', '-', '-', '-', '-', '-', '-', '-'],
-      ['*', '-', '*', '*', '-', '*', '-', '*', '*', '-', '-', '*', '*', '-', '-', '*', '*', '-', '-', '*', '-', '*'],
-      ['*', '-', '*', '*', '-', '-', '-', '*', '*', '-', 'p', '-', '-', '-', '-', '*', '*', '-', '-', '-', '-', '*'],
+      ['*', '*', '*', '*', '-', '-', '-', '-', '*', '*', '*', '*', '*', '*', '-', '-', '-', '-', '*', '*', '*', '*'],
+      ['*', '-', '-', '-', '-', '-', '-', '-', '-', '-', '*', '*', 'x', '-', '-', '-', '-', '-', '-', '-', '-', '*'],
+      ['*', '-', '*', '*', '-', '-', '-', '*', '*', '-', '*', '*', '-', '*', '*', '-', '-', '-', '*', '*', '-', '*'],
+      ['*', '-', '*', '*', '-', '-', '-', '-', '-', '*', '-', '-', '*', '-', 'x', '-', '-', '-', '*', '*', '-', '*'],
+      ['*', '-', '*', '-', '-', '-', '-', '*', '*', '-', 'p', '-', '-', '*', '*', '-', '-', '-', '-', '*', '-', '*'],
       ['-', '-', 'x', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      ['-', '-', '*', '*', '-', '-', '-', '*', '-', '-', '*', '*', '*', '*', '-', '-', '*', '-', '-', '-', '-', '*'],
-      ['-', '-', '-', '-', '-', '-', '-', '*', '*', '*', '-', '*', '*', '-', '*', '*', '*', '-', '-', '-', '-', '-'],
-      ['-', '*', '*', '*', '-', '-', '-', '*', 'x', '-', '-', 'eout', '-', '-', '-', '-', '*', '-', '-', '-', '-', '*'],
-      ['*', '*', '', '*', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '*'],
-      ['*', '*', '', '*', 'x', '*', '-', '-', '-', '*', 'e', 'e', 'e', '', '*', '-', '-', '-', '-', '*', '-', '*'],
-      ['-', '*', '*', '*', '-', '-', '-', '-', '-', '*', '', '', '', '', '*', '-', 'x', '-', '-', '-', '-', '*'],
-      ['-', '-', '-', '-', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '-'],
-      ['-', '*', '*', '*', '-', '*', '-', '*', '-', '-', '-', '-', '-', '-', '-', '-', '*', '-', '-', '*', '-', '-']
+      ['-', '*', '*', '-', '-', '-', '*', '-', '-', '*', '*', '*', '*', '-', '-', '*', '-', '-', '-', '-', '*', '-'],
+      ['-', '-', '-', '-', '-', '-', '*', '*', '*', '-', '*', '*', '-', '*', '*', '*', '-', '-', '-', '-', '-', '*'],
+      ['-', '*', '*', '-', '-', '-', '*', 'x', '-', '-', 'eout', '-', '-', '-', '-', '*', '-', '-', '-', '-', '-', '*'],
+      ['*', '-', '*', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '-', '*'],
+      ['*', '-', '*', 'x', '*', '-', '-', '-', '*', 'e', 'e', 'e', 'e', '*', '-', '-', '-', '-', '*', '-', '*', '-'],
+      ['-', '-', '-', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '-', '-'],
+      ['-', '*', '*', '-', '*', '-', '*', '-', '-', '-', '-', '-', '-', '-', '-', '*', '-', '-', '*', '-', '-', '*']
     ]
     for (var i = 0; i < 13; i++) {
       for (var j = 0; j < 22; j++) {
@@ -187,21 +221,21 @@ function App() {
 
   const createMaze = p5 => {
     p5.fill(255, 255, 0)
-    p5.arc(pacman.x*standardSize, pacman.y*standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
+    p5.arc(pacman.x * standardSize, pacman.y * standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
     p5.fill(30, 20, 80)
-    for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2)*standardSize, (Blocks[i].y - 1 / 2)*standardSize, standardSize);
+    for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2) * standardSize, (Blocks[i].y - 1 / 2) * standardSize, standardSize);
     p5.fill(180, 180, 200)
-    for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x *standardSize, Foods[i].y*standardSize, standardSize/4);
+    for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x * standardSize, Foods[i].y * standardSize, standardSize / 4);
     p5.fill(0, 127, 255)
-    for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x*standardSize, Powers[i].y*standardSize, 3*standardSize/4);
+    for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x * standardSize, Powers[i].y * standardSize, 5 * standardSize / 8);
     p5.fill(240, 20, 20)
-    for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x*standardSize, Enemies[i].y*standardSize, 7*standardSize/8);
+    for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x * standardSize, Enemies[i].y * standardSize, 7 * standardSize / 8);
   }
 
   return (
     <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Sketch preload={preload} setup={setup} draw={draw}
-        windowResized={windowResized} keyPressed={keyPressed} />
+        windowResized={windowResized} keyPressed={keyPressed} touchStarted={touchStarted} />
     </div>
   );
 }
