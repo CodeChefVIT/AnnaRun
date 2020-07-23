@@ -14,6 +14,8 @@ function App() {
   let Foods = [];
   let Powers = [];
   let Enemies = [];
+  let Gate;
+  let firedtwice = false;
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
@@ -34,7 +36,7 @@ function App() {
     p5.textAlign(p5.CENTER);
     p5.textSize(standardSize * 0.5);
     p5.fill(252);
-    maze();
+    maze(p5);
   };
   const draw = p5 => {
     p5.background(0)
@@ -100,53 +102,63 @@ function App() {
     p5.resizeCanvas(vw, vh);
   };
 
-  const touchStarted = p5 => {
-    if (gameState === "SS") {
-      gameState = "game";
-    } else if (gameState === "go") {
-      gameState = "SS";
-      score = 0;
-      maze();
-    } else if (gameState === "game") {
-      var newx = pacman.x;
-      var newy = pacman.y;
-      if (p5.windowWidth > p5.windowHeight) {
-        if (p5.mouseX < p5.width / 6) {
-          pacman.mouth = p5.PI;
-          if (pacman.x > -21 / 2) newx -= 1;
-        } else if (p5.mouseX > 5 * p5.width / 6) {
-          pacman.mouth = 0;
-          if (pacman.x < 21 / 2) newx += 1;
-        } else if (p5.mouseY < p5.height / 2) {
-          pacman.mouth = 3 * p5.HALF_PI;
-          if (pacman.y > -11 / 2) newy -= 1;
+  const Start_Resume = () => {
+    gameState = "game";
+    setTimeout(() => {activateEnemies()}, 5000);
+  }
+
+  const touchStarted = (p5, event) => {
+    if(!firedtwice) {
+      if (gameState === "SS") {
+        Start_Resume();
+      } else if (gameState === "go") {
+        gameState = "SS";
+        score = 0;
+        maze(p5);
+      } else if (gameState === "game") {
+        var newx = pacman.x;
+        var newy = pacman.y;
+        if (p5.windowWidth > p5.windowHeight) {
+          if (p5.mouseX < p5.width / 6) {
+            pacman.mouth = p5.PI;
+            if (pacman.x > -21 / 2) newx -= 1;
+          } else if (p5.mouseX > 5 * p5.width / 6) {
+            pacman.mouth = 0;
+            if (pacman.x < 21 / 2) newx += 1;
+          } else if (p5.mouseY < p5.height / 2) {
+            pacman.mouth = 3 * p5.HALF_PI;
+            if (pacman.y > -11 / 2) newy -= 1;
+          } else {
+            pacman.mouth = p5.HALF_PI;
+            if (pacman.y < 6) newy += 1;
+          }
         } else {
-          pacman.mouth = p5.HALF_PI;
-          if (pacman.y < 6) newy += 1;
+          console.log(p5.mouseX, p5.mouseY);
+          if (p5.mouseX < p5.width / 4) {
+            pacman.mouth = p5.PI;
+            if (pacman.x > -21 / 2) newx -= 1;
+          } else if (p5.mouseX > 3 * p5.width / 4) {
+            pacman.mouth = 0;
+            if (pacman.x < 21 / 2) newx += 1;
+          } else if (p5.mouseY < p5.height) {
+            pacman.mouth = 3 * p5.HALF_PI;
+            if (pacman.y > -11 / 2) newy -= 1;
+          } else {
+            pacman.mouth = p5.HALF_PI;
+            if (pacman.y < 6) newy += 1;
+          }
         }
-      } else {
-        if (p5.mouseX < p5.width / 4) {
-          pacman.mouth = p5.PI;
-          if (pacman.x > -21 / 2) newx -= 1;
-        } else if (p5.mouseX > 3 * p5.width / 4) {
-          pacman.mouth = 0;
-          if (pacman.x < 21 / 2) newx += 1;
-        } else if (p5.mouseY < p5.height) {
-          pacman.mouth = 3 * p5.HALF_PI;
-          if (pacman.y > -11 / 2) newy -= 1;
-        } else {
-          pacman.mouth = p5.HALF_PI;
-          if (pacman.y < 6) newy += 1;
-        }
+        movePac(p5, newx, newy);
       }
-      movePac(p5, newx, newy);
+      firedtwice = true;
+      setTimeout(()=>{firedtwice = false}, 100);
     }
   }
 
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
-      if (gameState === "SS") { gameState = "game"; }
-      else if (gameState === "go") { gameState = "SS"; score = 0; maze(); }
+      if (gameState === "SS") { Start_Resume(); }
+      else if (gameState === "go") { gameState = "SS"; score = 0; maze(p5); }
     } else if (gameState === "game") {
       var newx = pacman.x;
       var newy = pacman.y;
@@ -195,41 +207,61 @@ function App() {
         i--;
       }
     }
-
   };
 
-  const maze = () => {
+  const activateEnemies = () => {
+    for (var i = 0; i < Enemies.length; i++) {
+      if (Enemies[i].state === 0) {
+        Enemies[i].x = Gate.x;
+        Enemies[i].y = Gate.y;
+        Enemies[i].state = 1;
+      }
+    }
+  }
+
+  const maze = (p5) => {
+    var fCount = 175;
+    var pCount = 5;
+    var addedPac = false;
     const level = [
-      ['*', '*', '*', '*', '-', '-', '-', '-', '*', '*', '*', '*', '*', '*', '-', '-', '-', '-', '*', '*', '*', '*'],
-      ['*', '-', '-', '-', '-', '-', '-', '-', '-', '-', '*', '*', 'x', '-', '-', '-', '-', '-', '-', '-', '-', '*'],
-      ['*', '-', '*', '*', '-', '-', '-', '*', '*', '-', '*', '*', '-', '*', '*', '-', '-', '-', '*', '*', '-', '*'],
-      ['*', '-', '*', '*', '-', '-', '-', '-', '-', '*', '-', '-', '*', '-', 'x', '-', '-', '-', '*', '*', '-', '*'],
-      ['*', '-', '*', '-', '-', '-', '-', '*', '*', '-', 'p', '-', '-', '*', '*', '-', '-', '-', '-', '*', '-', '*'],
-      ['-', '-', 'x', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      ['-', '*', '*', '-', '-', '-', '*', '-', '-', '*', '*', '*', '*', '-', '-', '*', '-', '-', '-', '-', '*', '-'],
-      ['-', '-', '-', '-', '-', '-', '*', '*', '*', '-', '*', '*', '-', '*', '*', '*', '-', '-', '-', '-', '-', '*'],
-      ['-', '*', '*', '-', '-', '-', '*', 'x', '-', '-', 'eout', '-', '-', '-', '-', '*', '-', '-', '-', '-', '-', '*'],
-      ['*', '-', '*', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '-', '*'],
-      ['*', '-', '*', 'x', '*', '-', '-', '-', '*', 'e', 'e', 'e', 'e', '*', '-', '-', '-', '-', '*', '-', '*', '-'],
-      ['-', '-', '-', '-', '-', '-', '*', '-', '*', '*', '*', '*', '*', '*', '-', '*', '-', '-', '-', '-', '-', '-'],
-      ['-', '*', '*', '-', '*', '-', '*', '-', '-', '-', '-', '-', '-', '-', '-', '*', '-', '-', '*', '-', '-', '*']
+      ['*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*'],
+      ['*', '', '', '', '', '', '', '', '', '', '*', '*', '', '', '', '', '', '', '', '', '', '*'],
+      ['*', '', '*', '*', '', '', '', '*', '*', '', '*', '*', '', '*', '*', '', '', '', '*', '*', '', '*'],
+      ['*', '', '*', '*', '', '', '', '', '', '*', '', '', '*', '', '', '', '', '', '*', '*', '', '*'],
+      ['*', '', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '', '*'],
+      ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+      ['', '*', '*', '', '', '', '*', '', '', '*', '*', '*', '*', '', '', '*', '', '', '', '', '*', ''],
+      ['', '', '', '', '', '', '*', '*', '*', '', '*', '*', '', '*', '*', '*', '', '', '', '', '', '*'],
+      ['', '*', '*', '', '', '', '*', '', '', '', 'eout', '', '', '', '', '*', '', '', '', '', '', '*'],
+      ['*', '', '*', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', '*'],
+      ['*', '', '*', '', '', '', '', '', '*', 'e', 'e', 'e', 'e', '*', '', '', '', '', '*', '', '*', ''],
+      ['', '', '', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', ''],
+      ['', '*', '', '', '*', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '*', '', '', '*']
     ]
+
     for (var i = 0; i < 13; i++) {
       for (var j = 0; j < 22; j++) {
         if (level[i][j] === '*') {
           Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
-        else if (level[i][j] === '-') {
-          Foods.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
-        }
-        else if (level[i][j] === 'x') {
-          Powers.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
-        }
-        else if (level[i][j] === 'p') {
-          pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0 }
+        else if (level[i][j] === '') {
+          let r = p5.int(p5.random(0, 20));
+          if ((r === 1 || fCount === 0) && pCount > 0) {
+            Powers.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+            pCount--;
+          } else if (r === 2 && !addedPac) {
+            pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0 }
+            addedPac = true;
+          } else {
+            Foods.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+            fCount--;
+          }
         }
         else if (level[i][j] === 'e') {
-          Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) , state: 0});
+        }
+        else {
+          Gate = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) };
         }
       }
     }
@@ -251,7 +283,7 @@ function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Sketch preload={preload} setup={setup} draw={draw}
-        windowResized={windowResized} keyPressed={keyPressed} touchStarted={touchStarted} />
+        windowResized={windowResized} keyPressed={keyPressed} touchEnded={touchStarted} />
     </div>
   );
 }
