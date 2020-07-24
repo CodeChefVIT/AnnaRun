@@ -102,15 +102,18 @@ function App() {
     p5.resizeCanvas(vw, vh);
   };
 
-  const Start_Resume = () => {
+  const Start_Resume = (p5) => {
     gameState = "game";
-    setTimeout(() => {activateEnemies()}, 5000);
+    setInterval(() => {
+      moveEnemies(p5);
+    }, 200);
+    setTimeout(() => { activateEnemies() }, 5000);
   }
 
   const touchStarted = (p5, event) => {
-    if(!firedtwice) {
+    if (!firedtwice) {
       if (gameState === "SS") {
-        Start_Resume();
+        Start_Resume(p5);
       } else if (gameState === "go") {
         gameState = "SS";
         score = 0;
@@ -151,13 +154,13 @@ function App() {
         movePac(p5, newx, newy);
       }
       firedtwice = true;
-      setTimeout(()=>{firedtwice = false}, 100);
+      setTimeout(() => { firedtwice = false }, 100);
     }
   }
 
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
-      if (gameState === "SS") { Start_Resume(); }
+      if (gameState === "SS") { Start_Resume(p5); }
       else if (gameState === "go") { gameState = "SS"; score = 0; maze(p5); }
     } else if (gameState === "game") {
       var newx = pacman.x;
@@ -203,6 +206,7 @@ function App() {
       dis = p5.dist(newx * standardSize, newy * standardSize, Powers[i].x * standardSize, Powers[i].y * standardSize);
       if (dis < 1) {
         score += 5;
+        pacman.power = true;
         Powers.splice(i, 1);
         i--;
       }
@@ -219,7 +223,59 @@ function App() {
     }
   }
 
+  const moveEnemies = (p5) => {
+    for (var i = 0; i < Enemies.length; i++) {
+      var newx = Enemies[i].x;
+      var newy = Enemies[i].y;
+      let dir = p5.int(p5.random(0, 4));
+      if (dir === 0) {
+        if (newx > -21 / 2) newx -= 1;
+      } else if (dir === 1) {
+        if (newx < 21 / 2) newx += 1;
+      } else if (dir === 2) {
+        if (newy > -11 / 2) newy -= 1;
+      } else if (dir === 3) {
+        if (newy < 6) newy += 1;
+      }
+
+      var flag = true;
+      for (var j = 0; j < Blocks.length; j++) {
+        var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[j].x * standardSize, Blocks[j].y * standardSize);
+        if (dis < 1) {
+          flag = false;
+        }
+      }
+      for (j = 0; j < Enemies.length; j++) {
+        dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[j].x * standardSize, Enemies[j].y * standardSize);
+        if (dis < 1 && i !== j) {
+          flag = false;
+        }
+      }
+      if (flag === true) {
+        Enemies[i].x = newx;
+        Enemies[i].y = newy;
+      }
+      dis = p5.dist(newx * standardSize, newy * standardSize, pacman.x * standardSize, pacman.y * standardSize);
+      if (dis < 1) {
+        if (pacman.power) {
+          Enemies[i].state = 0;
+          Enemies[i].x = Enemies[i].init.x;
+          Enemies[i].y = Enemies[i].init.y;
+          score += 100;
+          pacman.power = false;
+        } else {
+          gameState = "go";
+          end_text = "YOU LOSE";
+        }
+      }
+    }
+  }
+
   const maze = (p5) => {
+    Blocks = [];
+    Foods = [];
+    Powers = [];
+    Enemies = [];
     var fCount = 175;
     var pCount = 5;
     var addedPac = false;
@@ -238,7 +294,6 @@ function App() {
       ['', '', '', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', ''],
       ['', '*', '', '', '*', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '*', '', '', '*']
     ]
-
     for (var i = 0; i < 13; i++) {
       for (var j = 0; j < 22; j++) {
         if (level[i][j] === '*') {
@@ -250,7 +305,7 @@ function App() {
             Powers.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
             pCount--;
           } else if (r === 2 && !addedPac) {
-            pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0 }
+            pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0, power: false }
             addedPac = true;
           } else {
             Foods.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
@@ -258,7 +313,7 @@ function App() {
           }
         }
         else if (level[i][j] === 'e') {
-          Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) , state: 0});
+          Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), state: 0, init: { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) } });
         }
         else {
           Gate = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) };
