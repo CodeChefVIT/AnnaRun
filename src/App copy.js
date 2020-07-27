@@ -35,19 +35,25 @@ function App() {
     p5.textFont(font);
     p5.textAlign(p5.CENTER);
     p5.textSize(standardSize * 0.5);
-    p5.strokeWeight(0);
     p5.fill(252);
     maze(p5);
   };
   const draw = p5 => {
     p5.background(0)
-    if (gameState === "SS") {
+    if (gameState === "Portrait") {
+      Rotate(p5);
+    } else if (gameState === "SS") {
       StartScreen(p5);
     } else if (gameState === "game") {
       GameScreen(p5);
     } else if (gameState === "go") {
       GameOver(p5);
     }
+  };
+
+  const Rotate = (p5) => {
+    console.log(p5.windowWidth, p5.windowHeight);
+    p5.text("Try rotating the screen..", 0, 0);
   };
 
   const StartScreen = (p5) => {
@@ -69,19 +75,6 @@ function App() {
       gameState = "go";
       end_text = "YOU WIN";
     }
-    if (p5.keyIsDown(p5.LEFT_ARROW)) {
-      p5.frameRate(6);
-      movePac(p5, 'LEFT');
-    } else if (p5.keyIsDown(p5.RIGHT_ARROW)) {
-      p5.frameRate(6);
-      movePac(p5, 'RIGHT');
-    } else if (p5.keyIsDown(p5.UP_ARROW)) {
-      p5.frameRate(6);
-      movePac(p5, 'UP');
-    } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
-      p5.frameRate(6);
-      movePac(p5, 'DOWN');
-    } else p5.frameRate(60);
   };
 
   const GameOver = (p5) => {
@@ -117,7 +110,7 @@ function App() {
     setTimeout(() => { activateEnemies() }, 5000);
   }
 
-  const touchEnded = (p5) => {
+  const touchStarted = (p5, event) => {
     if (!firedtwice) {
       if (gameState === "SS") {
         Start_Resume(p5);
@@ -126,44 +119,42 @@ function App() {
         score = 0;
         maze(p5);
       } else if (gameState === "game") {
+        var newx = pacman.x;
+        var newy = pacman.y;
         if (p5.windowWidth > p5.windowHeight) {
           if (p5.mouseX < p5.width / 6) {
-            movePac('LEFT');
+            pacman.mouth = p5.PI;
+            if (pacman.x > -21 / 2) newx -= 1;
           } else if (p5.mouseX > 5 * p5.width / 6) {
-            movePac('RIGHT');
+            pacman.mouth = 0;
+            if (pacman.x < 21 / 2) newx += 1;
           } else if (p5.mouseY < p5.height / 2) {
-            movePac('UP');
+            pacman.mouth = 3 * p5.HALF_PI;
+            if (pacman.y > -11 / 2) newy -= 1;
           } else {
-            movePac('DOWN');
+            pacman.mouth = p5.HALF_PI;
+            if (pacman.y < 6) newy += 1;
           }
         } else {
+          console.log(p5.mouseX, p5.mouseY);
           if (p5.mouseX < p5.width / 4) {
-            movePac('LEFT');
+            pacman.mouth = p5.PI;
+            if (pacman.x > -21 / 2) newx -= 1;
           } else if (p5.mouseX > 3 * p5.width / 4) {
-            movePac('RIGHT');
-          } else if (p5.mouseY < p5.height / 2) {
-            movePac('UP');
+            pacman.mouth = 0;
+            if (pacman.x < 21 / 2) newx += 1;
+          } else if (p5.mouseY < p5.height) {
+            pacman.mouth = 3 * p5.HALF_PI;
+            if (pacman.y > -11 / 2) newy -= 1;
           } else {
-            movePac('DOWN');
+            pacman.mouth = p5.HALF_PI;
+            if (pacman.y < 6) newy += 1;
           }
         }
+        movePac(p5, newx, newy);
       }
       firedtwice = true;
       setTimeout(() => { firedtwice = false }, 100);
-    }
-  }
-
-  const touchMoved = (p5) => {
-    if(p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY)) {
-      if(p5.mouseX > p5.pmouseX)
-        movePac('RIGHT');
-      else
-        movePac('LEFT');
-    } else if(p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY)) {
-      if(p5.mouseY > p5.pmouseY)
-        movePac('DOWN');
-      else
-        movePac('UP');
     }
   }
 
@@ -172,72 +163,52 @@ function App() {
       if (gameState === "SS") { Start_Resume(p5); }
       else if (gameState === "go") { gameState = "SS"; score = 0; maze(p5); }
     } else if (gameState === "game") {
+      var newx = pacman.x;
+      var newy = pacman.y;
       if (p5.keyCode === p5.LEFT_ARROW) {
         pacman.mouth = p5.PI;
-        // movePac(p5, 'LEFT');
+        if (pacman.x > -21 / 2) newx -= 1;
       } else if (p5.keyCode === p5.RIGHT_ARROW) {
         pacman.mouth = 0;
-        // movePac(p5, 'RIGHT');
+        if (pacman.x < 21 / 2) newx += 1;
       } else if (p5.keyCode === p5.UP_ARROW) {
         pacman.mouth = 3 * p5.HALF_PI;
-        // movePac(p5, 'UP');
+        if (pacman.y > -11 / 2) newy -= 1;
       } else if (p5.keyCode === p5.DOWN_ARROW) {
         pacman.mouth = p5.HALF_PI;
-        // movePac(p5, 'DOWN');
+        if (pacman.y < 6) newy += 1;
       }
+      movePac(p5, newx, newy);
     }
   }
 
-  const movePac = (p5, dir) => {
-    var newx = pacman.x;
-    var newy = pacman.y;
-    if(dir === 'LEFT' && pacman.x > -21 / 2) newx -= 1;
-    else if (dir === 'RIGHT' && pacman.x < 21 / 2) newx += 1;
-    else if (dir === 'UP' && pacman.y > -11 / 2) newy -= 1;
-    else if (dir === 'DOWN' && pacman.y < 12 / 2) newy += 1;
-    if( newx !== pacman.x || newy !== pacman.y) {
-      var flag = true;
-      for (var i = 0; i < Blocks.length; i++) {
-        var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[i].x * standardSize, Blocks[i].y * standardSize);
-        if (dis < 1) {
-          flag = false;
-        }
+  const movePac = (p5, newx, newy) => {
+    var flag = true;
+    for (var i = 0; i < Blocks.length; i++) {
+      var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[i].x * standardSize, Blocks[i].y * standardSize);
+      if (dis < 1) {
+        flag = false;
       }
-      if (flag === true) {
-        pacman.x = newx;
-        pacman.y = newy;
+    }
+    if (flag === true) {
+      pacman.x = newx;
+      pacman.y = newy;
+    }
+    for (i = 0; i < Foods.length; i++) {
+      dis = p5.dist(newx * standardSize, newy * standardSize, Foods[i].x * standardSize, Foods[i].y * standardSize);
+      if (dis < 1) {
+        score += 1;
+        Foods.splice(i, 1);
+        i--;
       }
-      for (i = 0; i < Foods.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Foods[i].x * standardSize, Foods[i].y * standardSize);
-        if (dis < 1) {
-          score += 1;
-          Foods.splice(i, 1);
-          i--;
-        }
-      }
-      for (i = 0; i < Powers.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Powers[i].x * standardSize, Powers[i].y * standardSize);
-        if (dis < 1) {
-          score += 5;
-          pacman.power = true;
-          Powers.splice(i, 1);
-          i--;
-        }
-      }
-      for (i = 0; i < Enemies.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[i].x * standardSize, Enemies[i].y * standardSize);
-        if (dis < 1) {
-          if (pacman.power) {
-            Enemies[i].state = 0;
-            Enemies[i].x = Enemies[i].init.x;
-            Enemies[i].y = Enemies[i].init.y;
-            score += 100;
-            pacman.power = false;
-          } else {
-            gameState = "go";
-            end_text = "YOU LOSE";
-          }
-        }
+    }
+    for (i = 0; i < Powers.length; i++) {
+      dis = p5.dist(newx * standardSize, newy * standardSize, Powers[i].x * standardSize, Powers[i].y * standardSize);
+      if (dis < 1) {
+        score += 5;
+        pacman.power = true;
+        Powers.splice(i, 1);
+        i--;
       }
     }
   };
@@ -352,7 +323,7 @@ function App() {
   }
 
   const createMaze = p5 => {
-    pacman.power ? p5.fill(255, 140, 20) : p5.fill(255, 255, 20);
+    p5.fill(255, 255, 0)
     p5.arc(pacman.x * standardSize, pacman.y * standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
     p5.fill(30, 20, 80)
     for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2) * standardSize, (Blocks[i].y - 1 / 2) * standardSize, standardSize);
@@ -360,14 +331,14 @@ function App() {
     for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x * standardSize, Foods[i].y * standardSize, standardSize / 4);
     p5.fill(0, 127, 255)
     for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x * standardSize, Powers[i].y * standardSize, 5 * standardSize / 8);
-    pacman.power ? p5.fill(160) : p5.fill(240, 20, 20);
+    p5.fill(240, 20, 20)
     for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x * standardSize, Enemies[i].y * standardSize, 7 * standardSize / 8);
   }
 
   return (
     <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Sketch preload={preload} setup={setup} draw={draw}
-        windowResized={windowResized} keyPressed={keyPressed} touchEnded={touchEnded} touchMoved={touchMoved} />
+        windowResized={windowResized} keyPressed={keyPressed} touchEnded={touchStarted} />
     </div>
   );
 }
