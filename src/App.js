@@ -128,23 +128,23 @@ function App() {
       } else if (gameState === "game") {
         if (p5.windowWidth > p5.windowHeight) {
           if (p5.mouseX < p5.width / 6) {
-            movePac('LEFT');
+            movePac(p5, 'LEFT');
           } else if (p5.mouseX > 5 * p5.width / 6) {
-            movePac('RIGHT');
+            movePac(p5, 'RIGHT');
           } else if (p5.mouseY < p5.height / 2) {
-            movePac('UP');
+            movePac(p5, 'UP');
           } else {
-            movePac('DOWN');
+            movePac(p5, 'DOWN');
           }
         } else {
           if (p5.mouseX < p5.width / 4) {
-            movePac('LEFT');
+            movePac(p5, 'LEFT');
           } else if (p5.mouseX > 3 * p5.width / 4) {
-            movePac('RIGHT');
+            movePac(p5, 'RIGHT');
           } else if (p5.mouseY < p5.height / 2) {
-            movePac('UP');
+            movePac(p5, 'UP');
           } else {
-            movePac('DOWN');
+            movePac(p5, 'DOWN');
           }
         }
       }
@@ -156,14 +156,14 @@ function App() {
   const touchMoved = (p5) => {
     if(p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY)) {
       if(p5.mouseX > p5.pmouseX)
-        movePac('RIGHT');
+        movePac(p5, 'RIGHT');
       else
-        movePac('LEFT');
+        movePac(p5, 'LEFT');
     } else if(p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY)) {
       if(p5.mouseY > p5.pmouseY)
-        movePac('DOWN');
+        movePac(p5, 'DOWN');
       else
-        movePac('UP');
+        movePac(p5, 'UP');
     }
   }
 
@@ -171,30 +171,16 @@ function App() {
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
       else if (gameState === "go") { gameState = "SS"; score = 0; maze(p5); }
-    } else if (gameState === "game") {
-      if (p5.keyCode === p5.LEFT_ARROW) {
-        pacman.mouth = p5.PI;
-        // movePac(p5, 'LEFT');
-      } else if (p5.keyCode === p5.RIGHT_ARROW) {
-        pacman.mouth = 0;
-        // movePac(p5, 'RIGHT');
-      } else if (p5.keyCode === p5.UP_ARROW) {
-        pacman.mouth = 3 * p5.HALF_PI;
-        // movePac(p5, 'UP');
-      } else if (p5.keyCode === p5.DOWN_ARROW) {
-        pacman.mouth = p5.HALF_PI;
-        // movePac(p5, 'DOWN');
-      }
     }
   }
 
   const movePac = (p5, dir) => {
     var newx = pacman.x;
     var newy = pacman.y;
-    if(dir === 'LEFT' && pacman.x > -21 / 2) newx -= 1;
-    else if (dir === 'RIGHT' && pacman.x < 21 / 2) newx += 1;
-    else if (dir === 'UP' && pacman.y > -11 / 2) newy -= 1;
-    else if (dir === 'DOWN' && pacman.y < 12 / 2) newy += 1;
+    if(dir === 'LEFT' && pacman.x > -21 / 2) { pacman.mouth = p5.PI; newx -= 1; }
+    else if (dir === 'RIGHT' && pacman.x < 21 / 2) { pacman.mouth = 0; newx += 1; }
+    else if (dir === 'UP' && pacman.y > -11 / 2) { pacman.mouth = 3* p5.HALF_PI; newy -= 1; }
+    else if (dir === 'DOWN' && pacman.y < 12 / 2) { pacman.mouth = p5.HALF_PI; newy += 1; }
     if( newx !== pacman.x || newy !== pacman.y) {
       var flag = true;
       for (var i = 0; i < Blocks.length; i++) {
@@ -367,7 +353,7 @@ function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
       <Sketch preload={preload} setup={setup} draw={draw}
-        windowResized={windowResized} keyPressed={keyPressed} touchEnded={touchEnded} touchMoved={touchMoved} />
+        windowResized={windowResized} keyPressed={keyPressed} touchStarted={touchEnded} touchMoved={touchMoved} />
     </div>
   );
 }
