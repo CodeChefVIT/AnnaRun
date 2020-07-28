@@ -17,6 +17,7 @@ function App() {
   let Gate;
   let levelNo = 1;
   let firedtwice = false;
+  let len = 0;
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
@@ -25,13 +26,11 @@ function App() {
     var vw, vh;
     if (11 * p5.windowHeight / 7 < p5.windowWidth) {
       standardSize = p5.windowHeight / 14;
-      vw = standardSize * 22;
-      vh = standardSize * 14;
     } else {
       standardSize = p5.windowWidth / 22;
-      vw = standardSize * 22;
-      vh = standardSize * 14;
     }
+    vw = standardSize * 22;
+    vh = standardSize * 14;
     p5.createCanvas(vw, vh, p5.WEBGL).parent(canvasParentRef);
     p5.textFont(font);
     p5.textAlign(p5.CENTER);
@@ -44,15 +43,20 @@ function App() {
     p5.background(0)
     if (gameState === "SS") {
       StartScreen(p5);
+    } else if (gameState === "LevelSplash") {
+      LevelSplash(p5);
     } else if (gameState === "game") {
       GameScreen(p5);
     } else if (gameState === "go") {
       GameOver(p5);
     }
+    // LevelSplash(p5);
   };
 
   const StartScreen = (p5) => {
-    p5.text("PRESS ENTER TO START", 0, 0)
+    p5.fill(255);
+    p5.text("TAP OR PRESS ENTER TO START", 0, 0)
+    if(localStorage.getItem('highscore') !== null) p5.text(`HighScore ${localStorage.getItem('highscore')}`, 0, 50);
   };
 
   const GameScreen = (p5) => {
@@ -60,10 +64,10 @@ function App() {
     p5.text('Score: ' + score, -9 * standardSize, -25 * standardSize / 4);
     p5.text('Level: ' + levelNo, 9 * standardSize, -25 * standardSize / 4);
     if (sign === "add") {
-      open += 0.05;
+      open += 0.01;
       if (open >= 1.95) sign = "sub";
     } else if (sign === "sub") {
-      open -= 0.05;
+      open -= 0.01;
       if (open <= 1.85) sign = "add";
     }
     createMaze(p5);
@@ -87,8 +91,10 @@ function App() {
     } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
       p5.frameRate(6);
       movePac(p5, 'DOWN');
-    } else p5.frameRate(12);
+    } else p5.frameRate(60);
   };
+
+
 
   const GameOver = (p5) => {
     p5.fill(255);
@@ -101,33 +107,52 @@ function App() {
     var vw, vh;
     if (11 * p5.windowHeight / 7 < p5.windowWidth) {
       standardSize = p5.windowHeight / 14;
-      vw = standardSize * 22;
-      vh = standardSize * 14;
-      gameState = "SS";
-      p5.textSize(standardSize * 0.5);
     } else {
       standardSize = p5.windowWidth / 22;
-      vw = standardSize * 22;
-      vh = standardSize * 14;
-      gameState = "SS";
-      p5.textSize(standardSize * 0.5);
     }
+    vw = standardSize * 22;
+    vh = standardSize * 14;
+    gameState = "SS";
+    p5.textSize(standardSize * 0.5);
     p5.resizeCanvas(vw, vh);
   };
 
   const Start_Resume = (p5) => {
-    gameState = "game";
-    setInterval(() => {
-      moveEnemies(p5);
-    }, 500 - levelNo*100);
-    setTimeout(() => { activateEnemies() }, 5000);
+    len = 0;
+    p5.frameRate(60);
+    gameState = "LevelSplash"
+    setTimeout(() => {
+      gameState = "game";
+      setInterval(() => {
+        moveEnemies(p5);
+      }, 500 - levelNo * 100);
+      setTimeout(() => { activateEnemies() }, 5000);
+    }, 1500);
+  }
+
+  const LevelSplash = (p5) => {
+    p5.fill(255);
+    p5.text(`Level ${levelNo}`, 0, 0);
+    p5.stroke(255);
+    p5.strokeWeight(10);
+    p5.line(-5*standardSize, 20, -5*standardSize+len, 20);
+    p5.strokeWeight(0)
+    len+=standardSize/9;
+  };
+
+  const setHS = () => {
+    if(localStorage.getItem('highscore') === null || localStorage.getItem('highscore') < score) {
+      localStorage.setItem('highscore', score);
+    } 
   }
 
   const touchStarted = (p5) => {
+    p5.frameRate(12);
     if (!firedtwice) {
       if (gameState === "SS") {
         Start_Resume(p5);
       } else if (gameState === "go") {
+        setHS();
         gameState = "SS";
         score = 0;
         levelNo = 1;
@@ -161,12 +186,12 @@ function App() {
   }
 
   const touchMoved = (p5, event) => {
-    if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY)) {
+    if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseX - p5.pmouseX) > 5) {
       if (p5.mouseX > p5.pmouseX)
         movePac(p5, 'RIGHT');
       else
         movePac(p5, 'LEFT');
-    } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY)) {
+    } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseY - p5.pmouseY) > 5) {
       if (p5.mouseY > p5.pmouseY)
         movePac(p5, 'DOWN');
       else
@@ -178,7 +203,7 @@ function App() {
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
-      else if (gameState === "go") { gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
+      else if (gameState === "go") { setHS();gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
     }
   }
 
@@ -221,16 +246,7 @@ function App() {
       for (i = 0; i < Enemies.length; i++) {
         dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[i].x * standardSize, Enemies[i].y * standardSize);
         if (dis < 1) {
-          if (pacman.power) {
-            Enemies[i].state = 0;
-            Enemies[i].x = Enemies[i].init.x;
-            Enemies[i].y = Enemies[i].init.y;
-            score += 100;
-            pacman.power = false;
-          } else {
-            gameState = "go";
-            end_text = "YOU LOSE";
-          }
+          HandleEnePacCollision(i);
         }
       }
     }
@@ -243,6 +259,19 @@ function App() {
         Enemies[i].y = Gate.y;
         Enemies[i].state = 1;
       }
+    }
+  }
+
+  const HandleEnePacCollision = (i) => {
+    if (pacman.power) {
+      Enemies[i].state = 0;
+      Enemies[i].x = Enemies[i].init.x;
+      Enemies[i].y = Enemies[i].init.y;
+      score += 100;
+      pacman.power = false;
+    } else {
+      gameState = "go";
+      end_text = "YOU LOSE";
     }
   }
 
@@ -280,16 +309,7 @@ function App() {
       }
       dis = p5.dist(newx * standardSize, newy * standardSize, pacman.x * standardSize, pacman.y * standardSize);
       if (dis < 1) {
-        if (pacman.power) {
-          Enemies[i].state = 0;
-          Enemies[i].x = Enemies[i].init.x;
-          Enemies[i].y = Enemies[i].init.y;
-          score += 100;
-          pacman.power = false;
-        } else {
-          gameState = "go";
-          end_text = "YOU LOSE";
-        }
+        HandleEnePacCollision(i);
       }
     }
   }
@@ -299,7 +319,7 @@ function App() {
     Foods = [];
     Powers = [];
     Enemies = [];
-    var fCount = 175;
+    var fCount = 5;
     var pCount = 5;
     var addedPac = false;
     const level = [
@@ -337,12 +357,12 @@ function App() {
         }
         else if (level[i][j] === 'e') {
           Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), state: 0, init: { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) } });
-          for(var k = 0; k < levelNo; k++) {
+          for (var k = 0; k < levelNo; k++) {
             j++;
             Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), state: 0, init: { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) } });
           }
         }
-        else if (level[i][j] === 'eout'){
+        else if (level[i][j] === 'eout') {
           Gate = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) };
         }
       }
