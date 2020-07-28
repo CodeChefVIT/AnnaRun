@@ -15,6 +15,7 @@ function App() {
   let Powers = [];
   let Enemies = [];
   let Gate;
+  let levelNo = 1;
   let firedtwice = false;
 
   const preload = p5 => {
@@ -56,18 +57,23 @@ function App() {
 
   const GameScreen = (p5) => {
     p5.fill(255, 255, 255)
-    p5.text('Score: ' + score, 0, -25 * standardSize / 4);
+    p5.text('Score: ' + score, -9 * standardSize, -25 * standardSize / 4);
+    p5.text('Level: ' + levelNo, 9 * standardSize, -25 * standardSize / 4);
     if (sign === "add") {
-      open += 0.01;
+      open += 0.05;
       if (open >= 1.95) sign = "sub";
     } else if (sign === "sub") {
-      open -= 0.01;
+      open -= 0.05;
       if (open <= 1.85) sign = "add";
     }
     createMaze(p5);
-    if (Foods.length === 0) {
+    if (Foods.length === 0 && levelNo === 3) {
       gameState = "go";
       end_text = "YOU WIN";
+    } else if (Foods.length === 0) {
+      levelNo++;
+      maze(p5);
+      Start_Resume(p5);
     }
     if (p5.keyIsDown(p5.LEFT_ARROW)) {
       p5.frameRate(6);
@@ -81,7 +87,7 @@ function App() {
     } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
       p5.frameRate(6);
       movePac(p5, 'DOWN');
-    } else p5.frameRate(60);
+    } else p5.frameRate(12);
   };
 
   const GameOver = (p5) => {
@@ -113,17 +119,18 @@ function App() {
     gameState = "game";
     setInterval(() => {
       moveEnemies(p5);
-    }, 200);
+    }, 500 - levelNo*100);
     setTimeout(() => { activateEnemies() }, 5000);
   }
 
-  const touchEnded = (p5) => {
+  const touchStarted = (p5) => {
     if (!firedtwice) {
       if (gameState === "SS") {
         Start_Resume(p5);
       } else if (gameState === "go") {
         gameState = "SS";
         score = 0;
+        levelNo = 1;
         maze(p5);
       } else if (gameState === "game") {
         if (p5.windowWidth > p5.windowHeight) {
@@ -153,35 +160,36 @@ function App() {
     }
   }
 
-  const touchMoved = (p5) => {
-    if(p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY)) {
-      if(p5.mouseX > p5.pmouseX)
+  const touchMoved = (p5, event) => {
+    if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY)) {
+      if (p5.mouseX > p5.pmouseX)
         movePac(p5, 'RIGHT');
       else
         movePac(p5, 'LEFT');
-    } else if(p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY)) {
-      if(p5.mouseY > p5.pmouseY)
+    } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY)) {
+      if (p5.mouseY > p5.pmouseY)
         movePac(p5, 'DOWN');
       else
         movePac(p5, 'UP');
     }
+    return false;
   }
 
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
-      else if (gameState === "go") { gameState = "SS"; score = 0; maze(p5); }
+      else if (gameState === "go") { gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
     }
   }
 
   const movePac = (p5, dir) => {
     var newx = pacman.x;
     var newy = pacman.y;
-    if(dir === 'LEFT' && pacman.x > -21 / 2) { pacman.mouth = p5.PI; newx -= 1; }
+    if (dir === 'LEFT' && pacman.x > -21 / 2) { pacman.mouth = p5.PI; newx -= 1; }
     else if (dir === 'RIGHT' && pacman.x < 21 / 2) { pacman.mouth = 0; newx += 1; }
-    else if (dir === 'UP' && pacman.y > -11 / 2) { pacman.mouth = 3* p5.HALF_PI; newy -= 1; }
+    else if (dir === 'UP' && pacman.y > -11 / 2) { pacman.mouth = 3 * p5.HALF_PI; newy -= 1; }
     else if (dir === 'DOWN' && pacman.y < 12 / 2) { pacman.mouth = p5.HALF_PI; newy += 1; }
-    if( newx !== pacman.x || newy !== pacman.y) {
+    if (newx !== pacman.x || newy !== pacman.y) {
       var flag = true;
       for (var i = 0; i < Blocks.length; i++) {
         var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[i].x * standardSize, Blocks[i].y * standardSize);
@@ -305,7 +313,7 @@ function App() {
       ['', '', '', '', '', '', '*', '*', '*', '', '*', '*', '', '*', '*', '*', '', '', '', '', '', '*'],
       ['', '*', '*', '', '', '', '*', '', '', '', 'eout', '', '', '', '', '*', '', '', '', '', '', '*'],
       ['*', '', '*', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', '*'],
-      ['*', '', '*', '', '', '', '', '', '*', 'e', 'e', 'e', 'e', '*', '', '', '', '', '*', '', '*', ''],
+      ['*', '', '*', '', '', '', '', '', '*', 'e', '-', '-', '-', '*', '', '', '', '', '*', '', '*', ''],
       ['', '', '', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', ''],
       ['', '*', '', '', '*', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '*', '', '', '*']
     ]
@@ -322,15 +330,19 @@ function App() {
           } else if (r === 2 && !addedPac) {
             pacman = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), mouth: 0, power: false }
             addedPac = true;
-          } else {
+          } else if (fCount > 0) {
             Foods.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
             fCount--;
           }
         }
         else if (level[i][j] === 'e') {
           Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), state: 0, init: { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) } });
+          for(var k = 0; k < levelNo; k++) {
+            j++;
+            Enemies.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2), state: 0, init: { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) } });
+          }
         }
-        else {
+        else if (level[i][j] === 'eout'){
           Gate = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) };
         }
       }
@@ -351,9 +363,9 @@ function App() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
       <Sketch preload={preload} setup={setup} draw={draw}
-        windowResized={windowResized} keyPressed={keyPressed} touchStarted={touchEnded} touchMoved={touchMoved} />
+        windowResized={windowResized} keyPressed={keyPressed} touchStarted={touchStarted} touchMoved={touchMoved} />
     </div>
   );
 }
