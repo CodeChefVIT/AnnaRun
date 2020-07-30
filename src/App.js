@@ -2,7 +2,7 @@ import React from 'react';
 import Sketch from 'react-p5';
 
 function App() {
-  let font;
+  let font, anna, annaG, chai, coffee;
   let gameState = "SS";
   let score = 0;
   let open = 1.98;
@@ -21,6 +21,10 @@ function App() {
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
+    anna = p5.loadImage("/images/anna.svg");
+    annaG = p5.loadImage("/images/anna-grey.svg");
+    chai = p5.loadImage("/images/chai.svg");
+    coffee = p5.loadImage("/images/coffee.svg");
   };
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
@@ -56,7 +60,7 @@ function App() {
   const StartScreen = (p5) => {
     p5.fill(255);
     p5.text("TAP OR PRESS ENTER TO START", 0, 0)
-    if(localStorage.getItem('highscore') !== null) p5.text(`HighScore ${localStorage.getItem('highscore')}`, 0, 50);
+    if (localStorage.getItem('highscore') !== null) p5.text(`HighScore ${localStorage.getItem('highscore')}`, 0, 50);
   };
 
   const GameScreen = (p5) => {
@@ -135,15 +139,15 @@ function App() {
     p5.text(`Level ${levelNo}`, 0, 0);
     p5.stroke(255);
     p5.strokeWeight(10);
-    p5.line(-5*standardSize, 20, -5*standardSize+len, 20);
+    p5.line(-5 * standardSize, 20, -5 * standardSize + len, 20);
     p5.strokeWeight(0)
-    len+=standardSize/9;
+    len += standardSize / 9;
   };
 
   const setHS = () => {
-    if(localStorage.getItem('highscore') === null || localStorage.getItem('highscore') < score) {
+    if (localStorage.getItem('highscore') === null || localStorage.getItem('highscore') < score) {
       localStorage.setItem('highscore', score);
-    } 
+    }
   }
 
   const touchStarted = (p5) => {
@@ -203,7 +207,7 @@ function App() {
   const keyPressed = p5 => {
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
-      else if (gameState === "go") { setHS();gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
+      else if (gameState === "go") { setHS(); gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
     }
   }
 
@@ -319,7 +323,7 @@ function App() {
     Foods = [];
     Powers = [];
     Enemies = [];
-    var fCount = 5;
+    var fCount = 175;
     var pCount = 5;
     var addedPac = false;
     const level = [
@@ -374,12 +378,9 @@ function App() {
     p5.arc(pacman.x * standardSize, pacman.y * standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
     p5.fill(30, 20, 80)
     for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2) * standardSize, (Blocks[i].y - 1 / 2) * standardSize, standardSize);
-    p5.fill(180, 180, 200)
-    for (i = 0; i < Foods.length; i++) p5.ellipse(Foods[i].x * standardSize, Foods[i].y * standardSize, standardSize / 4);
-    p5.fill(0, 127, 255)
-    for (i = 0; i < Powers.length; i++) p5.ellipse(Powers[i].x * standardSize, Powers[i].y * standardSize, 5 * standardSize / 8);
-    pacman.power ? p5.fill(160) : p5.fill(240, 20, 20);
-    for (i = 0; i < Enemies.length; i++) p5.ellipse(Enemies[i].x * standardSize, Enemies[i].y * standardSize, 7 * standardSize / 8);
+    for (i = 0; i < Foods.length; i++) p5.image(coffee, (Foods[i].x - 1 / 2) * standardSize, (Foods[i].y - 1 / 2) * standardSize, standardSize, standardSize);
+    for (i = 0; i < Powers.length; i++) p5.image(chai, (Powers[i].x - 1 / 2) * standardSize, (Powers[i].y - 1 / 2) * standardSize, standardSize, standardSize);
+    for (i = 0; i < Enemies.length; i++) p5.image((pacman.power && Enemies[i].state === 1) ? annaG : anna, (Enemies[i].x - 1 / 2) * standardSize, (Enemies[i].y - 1 / 2) * standardSize, 7 * standardSize / 8, 7 * standardSize / 8);
   }
 
   return (
