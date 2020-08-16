@@ -16,8 +16,8 @@ function App() {
   let Enemies = [];
   let Gate;
   let levelNo = 1;
-  let firedtwice = false;
   let len = 0;
+  let dir = 'LEFT';
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
@@ -54,7 +54,6 @@ function App() {
     } else if (gameState === "go") {
       GameOver(p5);
     }
-    // LevelSplash(p5);
   };
 
   const StartScreen = (p5) => {
@@ -68,10 +67,10 @@ function App() {
     p5.text('Score: ' + score, -9 * standardSize, -25 * standardSize / 4);
     p5.text('Level: ' + levelNo, 9 * standardSize, -25 * standardSize / 4);
     if (sign === "add") {
-      open += 0.01;
+      open += 0.04;
       if (open >= 1.95) sign = "sub";
     } else if (sign === "sub") {
-      open -= 0.01;
+      open -= 0.04;
       if (open <= 1.85) sign = "add";
     }
     createMaze(p5);
@@ -84,18 +83,21 @@ function App() {
       Start_Resume(p5);
     }
     if (p5.keyIsDown(p5.LEFT_ARROW)) {
-      p5.frameRate(6);
+      p5.frameRate(8 + levelNo);
       movePac(p5, 'LEFT');
     } else if (p5.keyIsDown(p5.RIGHT_ARROW)) {
-      p5.frameRate(6);
+      p5.frameRate(8 + levelNo);
       movePac(p5, 'RIGHT');
     } else if (p5.keyIsDown(p5.UP_ARROW)) {
-      p5.frameRate(6);
+      p5.frameRate(8 + levelNo);
       movePac(p5, 'UP');
     } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
-      p5.frameRate(6);
+      p5.frameRate(8 + levelNo);
       movePac(p5, 'DOWN');
-    } else p5.frameRate(60);
+    } else {
+      p5.frameRate(4);
+      movePac(p5, dir);
+    }
   };
 
 
@@ -135,13 +137,30 @@ function App() {
   }
 
   const LevelSplash = (p5) => {
-    p5.fill(255);
-    p5.text(`Level ${levelNo}`, 0, 0);
-    p5.stroke(255);
+    p5.fill(255, 255, 20);
+    p5.text(`Level ${levelNo}`, 0, -standardSize);
+    p5.stroke(255, 140, 20);
     p5.strokeWeight(10);
     p5.line(-5 * standardSize, 20, -5 * standardSize + len, 20);
     p5.strokeWeight(0)
     len += standardSize / 9;
+    if (p5.windowWidth < 900) { // Assuming all touch screens to be less than 900px in width
+      p5.fill(100, 100, 100, 25)
+      p5.stroke(250);
+      p5.strokeWeight(1);
+      if (p5.windowWidth > p5.windowHeight) {
+        p5.rect(-11 * standardSize, -7 * standardSize, p5.width / 6, p5.height);
+        p5.rect(11 * standardSize - p5.width / 6, -7 * standardSize, p5.width / 6, p5.height);
+        p5.rect(-11 * standardSize + p5.width / 6, -7 * standardSize, 4 * p5.width / 6, p5.height / 2);
+        p5.rect(-11 * standardSize + p5.width / 6, -7 * standardSize + p5.height / 2, 4 * p5.width / 6, p5.height / 2);
+      } else {
+        p5.rect(-11 * standardSize, -7 * standardSize, p5.width / 4, p5.height);
+        p5.rect(11 * standardSize - p5.width / 4, -7 * standardSize, p5.width / 4, p5.height);
+        p5.rect(-11 * standardSize + p5.width / 4, -7 * standardSize, 2 * p5.width / 4, p5.height / 2);
+        p5.rect(-11 * standardSize + p5.width / 4, -7 * standardSize + p5.height / 2, 2 * p5.width / 4, p5.height / 2);
+      }
+      p5.strokeWeight(0);
+    }
   };
 
   const setHS = () => {
@@ -151,56 +170,51 @@ function App() {
   }
 
   const touchStarted = (p5) => {
-    p5.frameRate(12);
-    if (!firedtwice) {
-      if (gameState === "SS") {
-        Start_Resume(p5);
-      } else if (gameState === "go") {
-        setHS();
-        gameState = "SS";
-        score = 0;
-        levelNo = 1;
-        maze(p5);
-      } else if (gameState === "game") {
-        if (p5.windowWidth > p5.windowHeight) {
-          if (p5.mouseX < p5.width / 6) {
-            movePac(p5, 'LEFT');
-          } else if (p5.mouseX > 5 * p5.width / 6) {
-            movePac(p5, 'RIGHT');
-          } else if (p5.mouseY < p5.height / 2) {
-            movePac(p5, 'UP');
-          } else {
-            movePac(p5, 'DOWN');
-          }
+    if (gameState === "SS") {
+      Start_Resume(p5);
+    } else if (gameState === "go") {
+      setHS();
+      gameState = "SS";
+      score = 0;
+      levelNo = 1;
+      maze(p5);
+    } else if (gameState === "game") {
+      if (p5.windowWidth > p5.windowHeight) {
+        if (p5.mouseX < p5.width / 6) {
+          dir = 'LEFT';
+        } else if (p5.mouseX > 5 * p5.width / 6) {
+          dir = 'RIGHT';
+        } else if (p5.mouseY < p5.height / 2) {
+          dir = 'UP';
         } else {
-          if (p5.mouseX < p5.width / 4) {
-            movePac(p5, 'LEFT');
-          } else if (p5.mouseX > 3 * p5.width / 4) {
-            movePac(p5, 'RIGHT');
-          } else if (p5.mouseY < p5.height / 2) {
-            movePac(p5, 'UP');
-          } else {
-            movePac(p5, 'DOWN');
-          }
+          dir = 'DOWN';
+        }
+      } else {
+        if (p5.mouseX < p5.width / 4) {
+          dir = 'LEFT';
+        } else if (p5.mouseX > 3 * p5.width / 4) {
+          dir = 'RIGHT';
+        } else if (p5.mouseY < p5.height / 2) {
+          dir = 'UP';
+        } else {
+          dir = 'DOWN';
         }
       }
-      firedtwice = true;
-      setTimeout(() => { firedtwice = false }, 100);
     }
   }
 
   const touchMoved = (p5, event) => {
-    if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseX - p5.pmouseX) > 5) {
-      if (p5.mouseX > p5.pmouseX)
-        movePac(p5, 'RIGHT');
-      else
-        movePac(p5, 'LEFT');
-    } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseY - p5.pmouseY) > 5) {
-      if (p5.mouseY > p5.pmouseY)
-        movePac(p5, 'DOWN');
-      else
-        movePac(p5, 'UP');
-    }
+    // if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseX - p5.pmouseX) > 5) {
+    //   if (p5.mouseX > p5.pmouseX)
+    //     movePac(p5, 'RIGHT');
+    //   else
+    //     movePac(p5, 'LEFT');
+    // } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseY - p5.pmouseY) > 5) {
+    //   if (p5.mouseY > p5.pmouseY)
+    //     movePac(p5, 'DOWN');
+    //   else
+    //     movePac(p5, 'UP');
+    // }
     return false;
   }
 
@@ -208,16 +222,27 @@ function App() {
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
       else if (gameState === "go") { setHS(); gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
+    } else {
+      if (p5.keyCode === p5.LEFT_ARROW) {
+        dir = 'LEFT';
+      } else if (p5.keyCode === p5.RIGHT_ARROW) {
+        dir = 'RIGHT';
+      } else if (p5.keyCode === p5.UP_ARROW) {
+        dir = 'UP';
+      } else if (p5.keyCode === p5.DOWN_ARROW) {
+        dir = 'DOWN';
+      }
     }
   }
 
-  const movePac = (p5, dir) => {
+  const movePac = (p5, d) => {
+    dir = d;
     var newx = pacman.x;
     var newy = pacman.y;
-    if (dir === 'LEFT' && pacman.x > -21 / 2) { pacman.mouth = p5.PI; newx -= 1; }
-    else if (dir === 'RIGHT' && pacman.x < 21 / 2) { pacman.mouth = 0; newx += 1; }
-    else if (dir === 'UP' && pacman.y > -11 / 2) { pacman.mouth = 3 * p5.HALF_PI; newy -= 1; }
-    else if (dir === 'DOWN' && pacman.y < 12 / 2) { pacman.mouth = p5.HALF_PI; newy += 1; }
+    if (d === 'LEFT' && pacman.x > -21 / 2) { pacman.mouth = p5.PI; newx -= 1; }
+    else if (d === 'RIGHT' && pacman.x < 21 / 2) { pacman.mouth = 0; newx += 1; }
+    else if (d === 'UP' && pacman.y > -11 / 2) { pacman.mouth = 3 * p5.HALF_PI; newy -= 1; }
+    else if (d === 'DOWN' && pacman.y < 12 / 2) { pacman.mouth = p5.HALF_PI; newy += 1; }
     if (newx !== pacman.x || newy !== pacman.y) {
       var flag = true;
       for (var i = 0; i < Blocks.length; i++) {
