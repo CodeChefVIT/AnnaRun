@@ -20,6 +20,12 @@ function App() {
   let dir = 'LEFT';
   let enemInterval;
   let firedAgain = false;
+  let rotateVar = 0;
+  let rotateDir = 0;
+
+  // window.screen.addEventListener("orientationchange", function () {
+  //   console.log("The orientation of the screen is: " + window.screen.orientation);
+  // });
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
@@ -28,6 +34,7 @@ function App() {
     chai = p5.loadImage("/images/chai.svg");
     coffee = p5.loadImage("/images/coffee.svg");
   };
+
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
     if (11 * p5.windowHeight / 7 < p5.windowWidth) {
@@ -44,6 +51,7 @@ function App() {
     p5.strokeWeight(0);
     p5.fill(252);
     maze(p5);
+    CheckOrientaion(p5);
   };
   const draw = p5 => {
     p5.background(0)
@@ -55,6 +63,8 @@ function App() {
       GameScreen(p5);
     } else if (gameState === "go") {
       GameOver(p5);
+    } else if (gameState === "Rotate") {
+      Rotate(p5);
     }
   };
 
@@ -88,7 +98,25 @@ function App() {
     movePac(p5, dir);
   };
 
+  const CheckOrientaion = (p5) => {
+    if(p5.windowWidth < p5.windowHeight &&  p5.windowWidth < 600) {
+      p5.resizeCanvas(p5.windowWidth - 10, p5.windowHeight - 10);
+      p5.textSize(30);
+      gameState = 'Rotate';
+    }
+  }
 
+  const Rotate = (p5) => {
+    if(rotateDir === 0) {
+      rotateVar += 0.1;
+      if(rotateVar >= 2) rotateDir = 1;
+    } else {
+      rotateVar -= 0.08;
+      if(rotateVar <= -1) rotateDir = 0;
+    }
+    p5.rotate(p5.PI/12 * rotateVar);
+    p5.text('Rotate Device', 0 , 0);
+  }
 
   const GameOver = (p5) => {
     p5.fill(255);
@@ -109,6 +137,7 @@ function App() {
     gameState = "SS";
     p5.textSize(standardSize * 0.5);
     p5.resizeCanvas(vw, vh);
+    CheckOrientaion(p5);
   };
 
   const Start_Resume = (p5) => {
@@ -126,6 +155,7 @@ function App() {
   }
 
   const LevelSplash = (p5) => {
+    p5.frameRate(60);
     p5.fill(255, 255, 20);
     p5.text(`Level ${levelNo}`, 0, -standardSize);
     p5.stroke(255, 140, 20);
