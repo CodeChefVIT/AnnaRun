@@ -18,6 +18,8 @@ function App() {
   let levelNo = 1;
   let len = 0;
   let dir = 'LEFT';
+  let enemInterval;
+  let firedAgain = false;
 
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
@@ -82,22 +84,8 @@ function App() {
       maze(p5);
       Start_Resume(p5);
     }
-    if (p5.keyIsDown(p5.LEFT_ARROW)) {
-      p5.frameRate(8 + levelNo);
-      movePac(p5, 'LEFT');
-    } else if (p5.keyIsDown(p5.RIGHT_ARROW)) {
-      p5.frameRate(8 + levelNo);
-      movePac(p5, 'RIGHT');
-    } else if (p5.keyIsDown(p5.UP_ARROW)) {
-      p5.frameRate(8 + levelNo);
-      movePac(p5, 'UP');
-    } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
-      p5.frameRate(8 + levelNo);
-      movePac(p5, 'DOWN');
-    } else {
-      p5.frameRate(4);
-      movePac(p5, dir);
-    }
+    p5.frameRate(4);
+    movePac(p5, dir);
   };
 
 
@@ -129,7 +117,8 @@ function App() {
     gameState = "LevelSplash"
     setTimeout(() => {
       gameState = "game";
-      setInterval(() => {
+      clearInterval(enemInterval);
+      enemInterval = setInterval(() => {
         moveEnemies(p5);
       }, 500 - levelNo * 100);
       setTimeout(() => { activateEnemies() }, 5000);
@@ -141,25 +130,15 @@ function App() {
     p5.text(`Level ${levelNo}`, 0, -standardSize);
     p5.stroke(255, 140, 20);
     p5.strokeWeight(10);
-    p5.line(-5 * standardSize, 20, -5 * standardSize + len, 20);
+    p5.line(-5 * standardSize, 1.5*standardSize, -5 * standardSize + len, 1.5*standardSize);
     p5.strokeWeight(0)
     len += standardSize / 9;
     if (p5.windowWidth < 900) { // Assuming all touch screens to be less than 900px in width
-      p5.fill(100, 100, 100, 25)
-      p5.stroke(250);
-      p5.strokeWeight(1);
-      if (p5.windowWidth > p5.windowHeight) {
-        p5.rect(-11 * standardSize, -7 * standardSize, p5.width / 6, p5.height);
-        p5.rect(11 * standardSize - p5.width / 6, -7 * standardSize, p5.width / 6, p5.height);
-        p5.rect(-11 * standardSize + p5.width / 6, -7 * standardSize, 4 * p5.width / 6, p5.height / 2);
-        p5.rect(-11 * standardSize + p5.width / 6, -7 * standardSize + p5.height / 2, 4 * p5.width / 6, p5.height / 2);
-      } else {
-        p5.rect(-11 * standardSize, -7 * standardSize, p5.width / 4, p5.height);
-        p5.rect(11 * standardSize - p5.width / 4, -7 * standardSize, p5.width / 4, p5.height);
-        p5.rect(-11 * standardSize + p5.width / 4, -7 * standardSize, 2 * p5.width / 4, p5.height / 2);
-        p5.rect(-11 * standardSize + p5.width / 4, -7 * standardSize + p5.height / 2, 2 * p5.width / 4, p5.height / 2);
-      }
-      p5.strokeWeight(0);
+      p5.text('Swipe to change pacman direction', 0, 3*standardSize);
+    }
+    p5.text('Get energised for next level threat by drinking all the coffee', 0, 5*standardSize);
+    if(p5.windowwidth < 600) {
+      p5.text('Use in Landscape mode for best experience');
     }
   };
 
@@ -178,43 +157,25 @@ function App() {
       score = 0;
       levelNo = 1;
       maze(p5);
-    } else if (gameState === "game") {
-      if (p5.windowWidth > p5.windowHeight) {
-        if (p5.mouseX < p5.width / 6) {
-          dir = 'LEFT';
-        } else if (p5.mouseX > 5 * p5.width / 6) {
-          dir = 'RIGHT';
-        } else if (p5.mouseY < p5.height / 2) {
-          dir = 'UP';
-        } else {
-          dir = 'DOWN';
-        }
-      } else {
-        if (p5.mouseX < p5.width / 4) {
-          dir = 'LEFT';
-        } else if (p5.mouseX > 3 * p5.width / 4) {
-          dir = 'RIGHT';
-        } else if (p5.mouseY < p5.height / 2) {
-          dir = 'UP';
-        } else {
-          dir = 'DOWN';
-        }
-      }
     }
   }
 
   const touchMoved = (p5, event) => {
-    // if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseX - p5.pmouseX) > 5) {
-    //   if (p5.mouseX > p5.pmouseX)
-    //     movePac(p5, 'RIGHT');
-    //   else
-    //     movePac(p5, 'LEFT');
-    // } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseY - p5.pmouseY) > 5) {
-    //   if (p5.mouseY > p5.pmouseY)
-    //     movePac(p5, 'DOWN');
-    //   else
-    //     movePac(p5, 'UP');
-    // }
+    if (!firedAgain) {
+      if (p5.abs(p5.mouseX - p5.pmouseX) > p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseX - p5.pmouseX) > 5) {
+        if (p5.mouseX > p5.pmouseX)
+          dir = 'RIGHT';
+        else
+          dir = 'LEFT';
+      } else if (p5.abs(p5.mouseX - p5.pmouseX) < p5.abs(p5.mouseY - p5.pmouseY) && p5.abs(p5.mouseY - p5.pmouseY) > 5) {
+        if (p5.mouseY > p5.pmouseY)
+          dir = 'DOWN';
+        else
+          dir = 'UP';
+      }
+      firedAgain = true;
+      setTimeout(() => { firedAgain = false }, 200);
+    }
     return false;
   }
 
