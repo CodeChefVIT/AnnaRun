@@ -2,19 +2,19 @@ import React from 'react';
 import Sketch from 'react-p5';
 
 function App() {
-  let font, anna, annaG, chai, coffee;
+  let font, font2, anna, annaG, chai, coffee, gameover, pac, pac1;
   let gameState = "SS";
   let score = 0;
   let open = 1.98;
   let sign = "add";
-  let end_text = "GAME OVER";
+  let end_text = "Game Over";
   let pacman;
   let standardSize;
   let Blocks = [];
   let Foods = [];
   let Powers = [];
   let Enemies = [];
-  let Gate;
+  let Gates = [];
   let levelNo = 1;
   let len = 0;
   let dir = 'LEFT';
@@ -23,16 +23,15 @@ function App() {
   let rotateVar = 0;
   let rotateDir = 0;
 
-  // window.screen.addEventListener("orientationchange", function () {
-  //   console.log("The orientation of the screen is: " + window.screen.orientation);
-  // });
-
   const preload = p5 => {
     font = p5.loadFont("/fonts/Raleway-Regular.ttf");
+    font2 = p5.loadFont("/fonts/Tangerine-Bold.ttf");
     anna = p5.loadImage("/images/anna.svg");
     annaG = p5.loadImage("/images/anna-grey.svg");
     chai = p5.loadImage("/images/chai.svg");
     coffee = p5.loadImage("/images/coffee.svg");
+    pac = p5.loadImage("images/pacc.svg");
+    // pac = p5.createImage("images/pac.gif");
   };
 
   const setup = (p5, canvasParentRef) => {
@@ -78,17 +77,17 @@ function App() {
     p5.fill(255, 255, 255)
     p5.text('Score: ' + score, -9 * standardSize, -25 * standardSize / 4);
     p5.text('Level: ' + levelNo, 9 * standardSize, -25 * standardSize / 4);
-    if (sign === "add") {
-      open += 0.04;
-      if (open >= 1.95) sign = "sub";
-    } else if (sign === "sub") {
-      open -= 0.04;
-      if (open <= 1.85) sign = "add";
-    }
+    // if (sign === "add") {
+    //   open += 0.04;
+    //   if (open >= 1.95) sign = "sub";
+    // } else if (sign === "sub") {
+    //   open -= 0.04;
+    //   if (open <= 1.85) sign = "add";
+    // }
     createMaze(p5);
     if (Foods.length === 0 && levelNo === 3) {
       gameState = "go";
-      end_text = "YOU WIN";
+      end_text = "You Win";
     } else if (Foods.length === 0) {
       levelNo++;
       maze(p5);
@@ -99,7 +98,7 @@ function App() {
   };
 
   const CheckOrientaion = (p5) => {
-    if(p5.windowWidth < p5.windowHeight &&  p5.windowWidth < 600) {
+    if (p5.windowWidth < p5.windowHeight && p5.windowWidth < 600) {
       p5.resizeCanvas(p5.windowWidth - 10, p5.windowHeight - 10);
       p5.textSize(30);
       gameState = 'Rotate';
@@ -107,22 +106,29 @@ function App() {
   }
 
   const Rotate = (p5) => {
-    if(rotateDir === 0) {
+    if (rotateDir === 0) {
       rotateVar += 0.1;
-      if(rotateVar >= 2) rotateDir = 1;
+      if (rotateVar >= 2) rotateDir = 1;
     } else {
       rotateVar -= 0.08;
-      if(rotateVar <= -1) rotateDir = 0;
+      if (rotateVar <= -1) rotateDir = 0;
     }
-    p5.rotate(p5.PI/12 * rotateVar);
-    p5.text('Rotate Device', 0 , 0);
+    p5.rotate(p5.PI / 12 * rotateVar);
+    p5.text('Rotate Device', 0, 0);
   }
 
   const GameOver = (p5) => {
     p5.fill(255);
-    p5.text(end_text, 0, -standardSize / 2);
-    p5.text("Score: " + score, 0, standardSize / 2);
-    p5.text("Press Enter To restart", 0, 6 * standardSize);
+    p5.textFont(font2);
+    p5.textSize(3.8 * standardSize);
+    p5.text(end_text, 2.5 * standardSize, -3 * standardSize);
+    p5.image(chai, -12 * standardSize, -6 * standardSize, 12 * standardSize, 12 * standardSize);
+    p5.textSize(2.5 * standardSize);
+    p5.text("Score: " + score, 2 * standardSize, -0.5 * standardSize);
+    p5.textSize(1.5 * standardSize);
+    p5.text("Tap or Press Enter To restart", 2.7 * standardSize, 2.7 * standardSize);
+    p5.textFont(font);
+    p5.textSize(standardSize / 2);
   }
 
   const windowResized = p5 => {
@@ -150,7 +156,7 @@ function App() {
       enemInterval = setInterval(() => {
         moveEnemies(p5);
       }, 500 - levelNo * 100);
-      setTimeout(() => { activateEnemies() }, 5000);
+      setTimeout(() => { activateEnemies(p5) }, 3000);
     }, 1500);
   }
 
@@ -160,14 +166,14 @@ function App() {
     p5.text(`Level ${levelNo}`, 0, -standardSize);
     p5.stroke(255, 140, 20);
     p5.strokeWeight(10);
-    p5.line(-5 * standardSize, 1.5*standardSize, -5 * standardSize + len, 1.5*standardSize);
+    p5.line(-5 * standardSize, 1.5 * standardSize, -5 * standardSize + len, 1.5 * standardSize);
     p5.strokeWeight(0)
     len += standardSize / 9;
     if (p5.windowWidth < 900) { // Assuming all touch screens to be less than 900px in width
-      p5.text('Swipe to change pacman direction', 0, 3*standardSize);
+      p5.text('Swipe to change pacman direction', 0, 3 * standardSize);
     }
-    p5.text('Get energised for next level threat by drinking all the coffee', 0, 5*standardSize);
-    if(p5.windowwidth < 600) {
+    p5.text('Get energised for next level threat by drinking all the coffee', 0, 5 * standardSize);
+    if (p5.windowwidth < 600) {
       p5.text('Use in Landscape mode for best experience');
     }
   };
@@ -265,33 +271,41 @@ function App() {
       }
       for (i = 0; i < Enemies.length; i++) {
         dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[i].x * standardSize, Enemies[i].y * standardSize);
+        console.log(dis);
         if (dis < 1) {
-          HandleEnePacCollision(i);
+          HandleEnePacCollision(p5, i);
         }
       }
     }
   };
 
-  const activateEnemies = () => {
+  const activateEnemies = (p5) => {
     for (var i = 0; i < Enemies.length; i++) {
       if (Enemies[i].state === 0) {
-        Enemies[i].x = Gate.x;
-        Enemies[i].y = Gate.y;
+        Enemies[i].x = Gates[p5.int(p5.random(0, 2))].x;
+        Enemies[i].y = Gates[p5.int(p5.random(0, 2))].y;
         Enemies[i].state = 1;
       }
     }
   }
 
-  const HandleEnePacCollision = (i) => {
+  const activateEnem = (p5, Enem) => {
+    Enem.x = Gates[p5.int(p5.random(0, 2))].x;
+    Enem.y = Gates[p5.int(p5.random(0, 2))].y;
+    Enem.state = 1;
+  }
+
+  const HandleEnePacCollision = (p5, i) => {
     if (pacman.power) {
       Enemies[i].state = 0;
       Enemies[i].x = Enemies[i].init.x;
       Enemies[i].y = Enemies[i].init.y;
       score += 100;
       pacman.power = false;
+      setTimeout(() => { activateEnem(p5, Enemies[i]) }, 10000);
     } else {
       gameState = "go";
-      end_text = "YOU LOSE";
+      end_text = "Over";
     }
   }
 
@@ -299,7 +313,7 @@ function App() {
     for (var i = 0; i < Enemies.length; i++) {
       var newx = Enemies[i].x;
       var newy = Enemies[i].y;
-      let dir = p5.int(p5.random(0, 4));
+      let dir = p5.int(p5.random(0, 1000)) % 4;
       if (dir === 0) {
         if (newx > -21 / 2) newx -= 1;
       } else if (dir === 1) {
@@ -326,10 +340,11 @@ function App() {
       if (flag === true) {
         Enemies[i].x = newx;
         Enemies[i].y = newy;
-      }
+      } else
       dis = p5.dist(newx * standardSize, newy * standardSize, pacman.x * standardSize, pacman.y * standardSize);
+      console.log(dis);
       if (dis < 1) {
-        HandleEnePacCollision(i);
+        HandleEnePacCollision(p5, i);
       }
     }
   }
@@ -339,8 +354,8 @@ function App() {
     Foods = [];
     Powers = [];
     Enemies = [];
-    var fCount = 175;
-    var pCount = 5;
+    var fCount = 172;
+    var pCount = 7;
     var addedPac = false;
     const level = [
       ['*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*'],
@@ -351,9 +366,9 @@ function App() {
       ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
       ['', '*', '*', '', '', '', '*', '', '', '*', '*', '*', '*', '', '', '*', '', '', '', '', '*', ''],
       ['', '', '', '', '', '', '*', '*', '*', '', '*', '*', '', '*', '*', '*', '', '', '', '', '', '*'],
-      ['', '*', '*', '', '', '', '*', '', '', '', 'eout', '', '', '', '', '*', '', '', '', '', '', '*'],
+      ['', '*', '*', '', '', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '', '', '', '*'],
       ['*', '', '*', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', '*'],
-      ['*', '', '*', '', '', '', '', '', '*', 'e', '-', '-', '-', '*', '', '', '', '', '*', '', '*', ''],
+      ['*', '', '*', '', '', '', '', 'eout', '*', 'e', '-', '-', '-', '*', 'eout', '', '', '', '*', '', '*', ''],
       ['', '', '', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', ''],
       ['', '*', '', '', '*', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '*', '', '', '*']
     ]
@@ -383,15 +398,16 @@ function App() {
           }
         }
         else if (level[i][j] === 'eout') {
-          Gate = { x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) };
+          Gates.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
       }
     }
   }
 
   const createMaze = p5 => {
-    pacman.power ? p5.fill(255, 140, 20) : p5.fill(255, 255, 20);
-    p5.arc(pacman.x * standardSize, pacman.y * standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
+    // pacman.power ? p5.fill(255, 140, 20) : p5.fill(255, 255, 20);
+    // p5.arc(pacman.x * standardSize, pacman.y * standardSize, standardSize, standardSize, pacman.mouth - open * p5.PI, pacman.mouth + open * p5.PI, p5.PIE);
+    p5.image(pac, (pacman.x - 0.5)*standardSize, (pacman.y - 0.5)*standardSize, standardSize, standardSize);
     p5.fill(30, 20, 80)
     for (var i = 0; i < Blocks.length; i++) p5.square((Blocks[i].x - 1 / 2) * standardSize, (Blocks[i].y - 1 / 2) * standardSize, standardSize);
     for (i = 0; i < Foods.length; i++) p5.image(coffee, (Foods[i].x - 1 / 2) * standardSize, (Foods[i].y - 1 / 2) * standardSize, standardSize, standardSize);
