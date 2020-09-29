@@ -3,14 +3,11 @@
 
 # AnnaRun
 
-> A pacman like game built with react-js and p5.js
+> A VIT themed pacman like game.
 
-<!-- ---
-[![DOCS](https://img.shields.io/badge/Documentation-see%20docs-green?style=flat-square&logo=appveyor)](INSERT_LINK_FOR_DOCS_HERE) 
-  [![UI ](https://img.shields.io/badge/User%20Interface-Link%20to%20UI-orange?style=flat-square&logo=appveyor)](INSERT_UI_LINK_HERE) -->
+> Run and escape from Anna. Drink coffee on the way and gain powerups to hide ur identity.
 
-## Features
-Run and escape from anna in this VIT themed pacman game.. Drink coffee on the way and find ur id card... so that u can escape out of the campus
+> Do you have the skills to escape out of the campus.
 
 
 ## Screenshots
