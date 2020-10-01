@@ -32,6 +32,13 @@ function App() {
     pac = p5.loadImage("/images/pac-left.gif");
   };
 
+  const distance = (x1,y1,x2,y2) => {
+    console.log(x1,y1, x2, y2);
+    var dx = x1-x2;
+    var dy = y1-y2;
+    return Math.sqrt(dx*dx + dy*dy);
+  };
+
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
     if (11 * p5.windowHeight / 7 < p5.windowWidth) {
@@ -146,7 +153,7 @@ function App() {
       clearInterval(enemInterval);
       enemInterval = setInterval(() => {
         moveEnemies(p5);
-      }, 500 - levelNo * 100);
+      }, 800 - levelNo * 100);
       setTimeout(() => { activateEnemies(p5) }, 3000);
     }, 1500);
   }
@@ -234,7 +241,7 @@ function App() {
     if (newx !== pacman.x || newy !== pacman.y) {
       var flag = true;
       for (var i = 0; i < Blocks.length; i++) {
-        var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[i].x * standardSize, Blocks[i].y * standardSize);
+        var dis = distance(newx, newy, Blocks[i].x, Blocks[i].y);
         if (dis < 1) {
           flag = false;
         }
@@ -244,7 +251,7 @@ function App() {
         pacman.y = newy;
       }
       for (i = 0; i < Foods.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Foods[i].x * standardSize, Foods[i].y * standardSize);
+        dis = distance(newx, newy, Foods[i].x, Foods[i].y);
         if (dis < 1) {
           score += 1;
           Foods.splice(i, 1);
@@ -252,7 +259,7 @@ function App() {
         }
       }
       for (i = 0; i < Powers.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Powers[i].x * standardSize, Powers[i].y * standardSize);
+        dis = distance(newx, newy, Powers[i].x, Powers[i].y);
         if (dis < 1) {
           score += 5;
           pacman.power = true;
@@ -261,8 +268,10 @@ function App() {
         }
       }
       for (i = 0; i < Enemies.length; i++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[i].x * standardSize, Enemies[i].y * standardSize);
+        dis = distance(newx, newy, Enemies[i].x, Enemies[i].y);
         if (dis < 1) {
+          console.log(dis, newx, newy, Enemies[i].x, Enemies[i].y);
+          console.log("Check this");
           HandleEnePacCollision(p5, i);
         }
       }
@@ -292,7 +301,7 @@ function App() {
       Enemies[i].y = Enemies[i].init.y;
       score += 100;
       pacman.power = false;
-      setTimeout(() => { activateEnem(p5, Enemies[i]) }, 10000);
+      setTimeout(() => { activateEnem(p5, Enemies[i]) }, 15000);
     } else {
       gameState = "go";
       end_text = "Game Over";
@@ -316,13 +325,13 @@ function App() {
 
       var flag = true;
       for (var j = 0; j < Blocks.length; j++) {
-        var dis = p5.dist(newx * standardSize, newy * standardSize, Blocks[j].x * standardSize, Blocks[j].y * standardSize);
+        var dis = distance(newx, newy, Blocks[j].x, Blocks[j].y);
         if (dis < 1) {
           flag = false;
         }
       }
       for (j = 0; j < Enemies.length; j++) {
-        dis = p5.dist(newx * standardSize, newy * standardSize, Enemies[j].x * standardSize, Enemies[j].y * standardSize);
+        dis = distance(newx, newy, Enemies[j].x, Enemies[j].y);
         if (dis < 1 && i !== j) {
           flag = false;
         }
@@ -331,8 +340,10 @@ function App() {
         Enemies[i].x = newx;
         Enemies[i].y = newy;
       } else
-      dis = p5.dist(newx * standardSize, newy * standardSize, pacman.x * standardSize, pacman.y * standardSize);
+      dis = distance(newx, newy, pacman.x, pacman.y);
       if (dis < 1) {
+        console.log(dis, newx, newy, pacman.x, pacman.y);
+        console.log("Check this");
         HandleEnePacCollision(p5, i);
       }
     }
@@ -343,7 +354,7 @@ function App() {
     Foods = [];
     Powers = [];
     Enemies = [];
-    var fCount = 172;
+    var fCount = 10;
     var pCount = 7;
     var addedPac = false;
     const level = [
