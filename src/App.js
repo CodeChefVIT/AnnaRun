@@ -32,12 +32,7 @@ function App() {
     pac = p5.loadImage("/images/pac-left.gif");
   };
 
-  const distance = (x1,y1,x2,y2) => {
-    console.log(x1,y1, x2, y2);
-    var dx = x1-x2;
-    var dy = y1-y2;
-    return Math.sqrt(dx*dx + dy*dy);
-  };
+  const distance = (x1, y1, x2, y2) => Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
@@ -74,6 +69,7 @@ function App() {
 
   const StartScreen = (p5) => {
     p5.fill(255);
+    clearInterval(enemInterval);
     p5.text("TAP OR PRESS ENTER TO START", 0, 0)
     if (localStorage.getItem('highscore') !== null) p5.text(`HighScore ${localStorage.getItem('highscore')}`, 0, 50);
   };
@@ -127,6 +123,7 @@ function App() {
     p5.text("Tap or Press Enter To restart", 2.7 * standardSize, 2.7 * standardSize);
     p5.textFont(font);
     p5.textSize(standardSize / 2);
+    clearInterval(enemInterval);
   }
 
   const windowResized = p5 => {
@@ -150,7 +147,6 @@ function App() {
     gameState = "LevelSplash"
     setTimeout(() => {
       gameState = "game";
-      clearInterval(enemInterval);
       enemInterval = setInterval(() => {
         moveEnemies(p5);
       }, 800 - levelNo * 100);
@@ -249,30 +245,28 @@ function App() {
       if (flag === true) {
         pacman.x = newx;
         pacman.y = newy;
-      }
-      for (i = 0; i < Foods.length; i++) {
-        dis = distance(newx, newy, Foods[i].x, Foods[i].y);
-        if (dis < 1) {
-          score += 1;
-          Foods.splice(i, 1);
-          i--;
+        for (i = 0; i < Foods.length; i++) {
+          dis = distance(newx, newy, Foods[i].x, Foods[i].y);
+          if (dis < 1) {
+            score += 1;
+            Foods.splice(i, 1);
+            i--;
+          }
         }
-      }
-      for (i = 0; i < Powers.length; i++) {
-        dis = distance(newx, newy, Powers[i].x, Powers[i].y);
-        if (dis < 1) {
-          score += 5;
-          pacman.power = true;
-          Powers.splice(i, 1);
-          i--;
+        for (i = 0; i < Powers.length; i++) {
+          dis = distance(newx, newy, Powers[i].x, Powers[i].y);
+          if (dis < 1) {
+            score += 5;
+            pacman.power = true;
+            Powers.splice(i, 1);
+            i--;
+          }
         }
-      }
-      for (i = 0; i < Enemies.length; i++) {
-        dis = distance(newx, newy, Enemies[i].x, Enemies[i].y);
-        if (dis < 1) {
-          console.log(dis, newx, newy, Enemies[i].x, Enemies[i].y);
-          console.log("Check this");
-          HandleEnePacCollision(p5, i);
+        for (i = 0; i < Enemies.length; i++) {
+          dis = distance(newx, newy, Enemies[i].x, Enemies[i].y);
+          if (dis < 1) {
+            HandleEnePacCollision(p5, i);
+          }
         }
       }
     }
@@ -339,12 +333,10 @@ function App() {
       if (flag === true) {
         Enemies[i].x = newx;
         Enemies[i].y = newy;
-      } else
-      dis = distance(newx, newy, pacman.x, pacman.y);
-      if (dis < 1) {
-        console.log(dis, newx, newy, pacman.x, pacman.y);
-        console.log("Check this");
-        HandleEnePacCollision(p5, i);
+        dis = distance(newx, newy, pacman.x, pacman.y);
+        if (dis < 1) {
+          HandleEnePacCollision(p5, i);
+        }
       }
     }
   }
@@ -354,7 +346,7 @@ function App() {
     Foods = [];
     Powers = [];
     Enemies = [];
-    var fCount = 10;
+    var fCount = 172;
     var pCount = 7;
     var addedPac = false;
     const level = [
@@ -410,7 +402,7 @@ function App() {
     for (i = 0; i < Foods.length; i++) p5.image(coffee, (Foods[i].x - 1 / 2) * standardSize, (Foods[i].y - 1 / 2) * standardSize, standardSize, standardSize);
     for (i = 0; i < Powers.length; i++) p5.image(chai, (Powers[i].x - 1 / 2) * standardSize, (Powers[i].y - 1 / 2) * standardSize, standardSize, standardSize);
     for (i = 0; i < Enemies.length; i++) p5.image((pacman.power && Enemies[i].state === 1) ? annaG : anna, (Enemies[i].x - 1 / 2) * standardSize, (Enemies[i].y - 1 / 2) * standardSize, 7 * standardSize / 8, 7 * standardSize / 8);
-    p5.image(pacman.mouth === 1 ? pac1 : pac, (pacman.x - 0.5)*standardSize, (pacman.y - 0.5)*standardSize, standardSize, standardSize);
+    p5.image(pacman.mouth === 1 ? pac1 : pac, (pacman.x - 0.5) * standardSize, (pacman.y - 0.5) * standardSize, standardSize, standardSize);
   }
 
   return (
