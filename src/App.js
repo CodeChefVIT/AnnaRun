@@ -32,13 +32,7 @@ function App() {
     pac = p5.loadImage("/images/pac-left.gif");
   };
 
-  const distance = (x1, y1, x2, y2) => {
-    var dx = x1 - x2;
-    var dy = y1 - y2;
-    var dis = Math.sqrt(dx * dx + dy * dy);
-    if (dis === 0) console.log(x1, y1, x2, y2);
-    return dis;
-  };
+  const distance = (x1, y1, x2, y2) => Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 
   const setup = (p5, canvasParentRef) => {
     var vw, vh;
@@ -176,7 +170,6 @@ function App() {
     if (p5.windowwidth < 600) {
       p5.text('Use in Landscape mode for best experience');
     }
-    console.clear();
   };
 
   const setHS = () => {
@@ -272,8 +265,6 @@ function App() {
         for (i = 0; i < Enemies.length; i++) {
           dis = distance(newx, newy, Enemies[i].x, Enemies[i].y);
           if (dis < 1) {
-            console.log(newx, newy, Enemies[i].x, Enemies[i].y);
-            console.log("Check this");
             HandleEnePacCollision(p5, i);
           }
         }
@@ -344,8 +335,6 @@ function App() {
         Enemies[i].y = newy;
         dis = distance(newx, newy, pacman.x, pacman.y);
         if (dis < 1) {
-          console.log(newx, newy, pacman.x, pacman.y);
-          console.log("Check this");
           HandleEnePacCollision(p5, i);
         }
       }
