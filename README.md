@@ -4,14 +4,13 @@
 # AnnaRun
 
 > A VIT themed pacman like game.
-
 > Run and escape from Anna. Drink coffee on the way and gain powerups to hide ur identity.
-
 > Do you have the skills to escape out of the campus.
 
 
 ## Screenshots
-<img src="" alt="Project Screenshots">
+<img src="https://user-images.githubusercontent.com/24913006/95543988-9aa59300-0a17-11eb-9886-31bbe2885dee.png" alt="Project Screenshots">
+<img src="https://user-images.githubusercontent.com/24913006/95544158-fc65fd00-0a17-11eb-89b7-3177a689b946.png" alt="Project Screenshots">
 
 ## Instructions to run
 
@@ -19,7 +18,6 @@
 Clone the repo
 Install npm packages (npm install)
 Start (npm start)
-
 ```
 
 ## Contributors
@@ -30,5 +28,5 @@ Start (npm start)
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 
 <p align="center">
-	With :heart: by <a href="http://www.codechefvit.com" target="_blank">CodeChef-VIT</a> and <a href="https://github.io.com/gvinayakgupta">Vinayak Gupta</a>
+	With :heart: by <a href="http://www.codechefvit.com" target="_blank">CodeChef-VIT</a>
 </p>
