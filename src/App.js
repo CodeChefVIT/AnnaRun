@@ -5,6 +5,7 @@ import "p5/lib/addons/p5.sound";
 function App() {
   let font, font2, anna, annaG, chai, coffee, pac, pac1, song;
   let lib, libPos, main, mainPos;
+  let mart, martPos, foodies, foodiesPos;
   let gameState = "SS";
   let score = 0;
   let end_text = "Game Over";
@@ -34,6 +35,8 @@ function App() {
     pac = p5.loadImage("/images/pac-left.gif");
     lib = p5.loadImage("/images/library.jpg");
     main = p5.loadImage("/images/building.jpg");
+    mart = p5.loadImage("/images/allMart.jpg");
+    foodies = p5.loadImage("/images/foodies.jpg");
     song = p5.loadSound("/sound/themeSong.mp3");
   };
 
@@ -366,7 +369,7 @@ function App() {
     const level = [
       ['*', '*', '*', '*', '', '', '', '', 'm', '*', '*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*'],
       ['*', '', '', '', '', '', '', '', '', '', '*', '*', '', '', '', '', '', '', '', '', '', '*'],
-      ['*', '', '*', '*', '', '', '', '*', '*', '', '*', '*', '', '*', '*', '', '', '', '*', '*', '', '*'],
+      ['*', '', 'a', '*', '', '', '', '*', '*', '', '*', '*', '', '*', '*', '', '', '', 'f', '*', '', '*'],
       ['*', '', '*', '*', '', '', '', '', '', '*', '', '', '*', '', '', '', '', '', '*', '*', '', '*'],
       ['*', '', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '', '*'],
       ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
@@ -414,6 +417,14 @@ function App() {
           Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
           mainPos = {x: (j-9 + 1/4), y: (i-6+1/2)};
         }
+        else if (level[i][j] === 'a') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          martPos = {x: (j-11 + 1/4), y: (i-6+1/4)};
+        }
+        else if (level[i][j] === 'f') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          foodiesPos = {x: (j-11 + 1/4), y: (i-6+1/4)};
+        }
       }
     }
   }
@@ -427,6 +438,8 @@ function App() {
     p5.image(pacman.mouth === 1 ? pac1 : pac, (pacman.x - 0.5) * standardSize, (pacman.y - 0.5) * standardSize, standardSize, standardSize);
     p5.image(lib, libPos.x * standardSize, libPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
     p5.image(main, mainPos.x * standardSize, mainPos.y * standardSize, 1.5*standardSize, 2*standardSize);
+    p5.image(mart, martPos.x * standardSize, martPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
+    p5.image(foodies, foodiesPos.x * standardSize, foodiesPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
   }
 
   return (
