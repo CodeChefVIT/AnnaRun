@@ -1,8 +1,11 @@
 import React from 'react';
 import Sketch from 'react-p5';
+import "p5/lib/addons/p5.sound";
 
 function App() {
-  let font, font2, anna, annaG, chai, coffee, pac, pac1;
+  let font, font2, anna, annaG, chai, coffee, pac, pac1, song;
+  let lib, libPos, main, mainPos;
+  let mart, martPos, foodies, foodiesPos;
   let gameState = "SS";
   let score = 0;
   let end_text = "Game Over";
@@ -30,6 +33,11 @@ function App() {
     coffee = p5.loadImage("/images/coffee.svg");
     pac1 = p5.loadImage("/images/pac.gif");
     pac = p5.loadImage("/images/pac-left.gif");
+    lib = p5.loadImage("/images/library.jpg");
+    main = p5.loadImage("/images/building.jpg");
+    mart = p5.loadImage("/images/allMart.jpg");
+    foodies = p5.loadImage("/images/foodies.jpg");
+    song = p5.loadSound("/sound/themeSong.mp3");
   };
 
   const distance = (x1, y1, x2, y2) => Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -51,16 +59,22 @@ function App() {
     p5.fill(252);
     maze(p5);
     CheckOrientaion(p5);
+    console.log(song);
+
   };
   const draw = p5 => {
     p5.background(0)
     if (gameState === "SS") {
+      p5.masterVolume(0.05);
       StartScreen(p5);
     } else if (gameState === "LevelSplash") {
+      p5.masterVolume(0.05);
       LevelSplash(p5);
     } else if (gameState === "game") {
+      p5.masterVolume(0.1);
       GameScreen(p5);
     } else if (gameState === "go") {
+      p5.masterVolume(0.2);
       GameOver(p5);
     } else if (gameState === "Rotate") {
       Rotate(p5);
@@ -112,6 +126,7 @@ function App() {
   }
 
   const GameOver = (p5) => {
+    // song.pause();
     p5.fill(255);
     p5.textFont(font2);
     p5.textSize(3.8 * standardSize);
@@ -179,6 +194,7 @@ function App() {
   }
 
   const touchStarted = (p5) => {
+    if(!song.isPlaying()) song.play();
     if (gameState === "SS") {
       Start_Resume(p5);
     } else if (gameState === "go") {
@@ -210,6 +226,7 @@ function App() {
   }
 
   const keyPressed = p5 => {
+    if(!song.isPlaying()) song.play();
     if (p5.keyCode === p5.ENTER) {
       if (gameState === "SS") { Start_Resume(p5); }
       else if (gameState === "go") { setHS(); gameState = "SS"; score = 0; levelNo = 1; maze(p5); }
@@ -350,13 +367,13 @@ function App() {
     var pCount = 7;
     var addedPac = false;
     const level = [
-      ['*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*'],
+      ['*', '*', '*', '*', '', '', '', '', 'm', '*', '*', '*', '*', '*', '', '', '', '', '*', '*', '*', '*'],
       ['*', '', '', '', '', '', '', '', '', '', '*', '*', '', '', '', '', '', '', '', '', '', '*'],
-      ['*', '', '*', '*', '', '', '', '*', '*', '', '*', '*', '', '*', '*', '', '', '', '*', '*', '', '*'],
+      ['*', '', 'a', '*', '', '', '', '*', '*', '', '*', '*', '', '*', '*', '', '', '', 'f', '*', '', '*'],
       ['*', '', '*', '*', '', '', '', '', '', '*', '', '', '*', '', '', '', '', '', '*', '*', '', '*'],
       ['*', '', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '*', '', '', '', '', '*', '', '*'],
       ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
-      ['', '*', '*', '', '', '', '*', '', '', '*', '*', '*', '*', '', '', '*', '', '', '', '', '*', ''],
+      ['', '*', '*', '', '', '', '*', '', '', 'l', '*', '*', '*', '', '', '*', '', '', '', '', '*', ''],
       ['', '', '', '', '', '', '*', '*', '*', '', '*', '*', '', '*', '*', '*', '', '', '', '', '', '*'],
       ['', '*', '*', '', '', '', '*', '', '', '', '', '', '', '', '', '*', '', '', '', '', '', '*'],
       ['*', '', '*', '', '', '', '*', '', '*', '*', '*', '*', '*', '*', '', '*', '', '', '', '', '', '*'],
@@ -392,6 +409,22 @@ function App() {
         else if (level[i][j] === 'eout') {
           Gates.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
         }
+        else if (level[i][j] === 'l') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          libPos = {x: (j-10 + 1/4), y: (i-6+1/4)};
+        }
+        else if (level[i][j] === 'm') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          mainPos = {x: (j-9 + 1/4), y: (i-6+1/2)};
+        }
+        else if (level[i][j] === 'a') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          martPos = {x: (j-11 + 1/4), y: (i-6+1/4)};
+        }
+        else if (level[i][j] === 'f') {
+          Blocks.push({ x: (j - 11 + 1 / 2), y: (i - 6 + 1 / 2) });
+          foodiesPos = {x: (j-11 + 1/4), y: (i-6+1/4)};
+        }
       }
     }
   }
@@ -403,6 +436,10 @@ function App() {
     for (i = 0; i < Powers.length; i++) p5.image(chai, (Powers[i].x - 1 / 2) * standardSize, (Powers[i].y - 1 / 2) * standardSize, standardSize, standardSize);
     for (i = 0; i < Enemies.length; i++) p5.image((pacman.power && Enemies[i].state === 1) ? annaG : anna, (Enemies[i].x - 1 / 2) * standardSize, (Enemies[i].y - 1 / 2) * standardSize, 7 * standardSize / 8, 7 * standardSize / 8);
     p5.image(pacman.mouth === 1 ? pac1 : pac, (pacman.x - 0.5) * standardSize, (pacman.y - 0.5) * standardSize, standardSize, standardSize);
+    p5.image(lib, libPos.x * standardSize, libPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
+    p5.image(main, mainPos.x * standardSize, mainPos.y * standardSize, 1.5*standardSize, 2*standardSize);
+    p5.image(mart, martPos.x * standardSize, martPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
+    p5.image(foodies, foodiesPos.x * standardSize, foodiesPos.y * standardSize, 1.5*standardSize, 1.5*standardSize);
   }
 
   return (
