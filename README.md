@@ -4,8 +4,8 @@
 # AnnaRun
 
 > A VIT themed pacman like game.
-> Run and escape from Anna. Drink coffee on the way and gain powerups to hide ur identity.
-> Do you have the skills to escape out of the campus.
+> Run and escape from Anna. Drink coffee on the way and gain powerups to hide your identity.
+> Do you have the skills to escape out of the campus?
 
 
 ## Screenshots
